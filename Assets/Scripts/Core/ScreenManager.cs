@@ -1,13 +1,19 @@
+using NUnit.Framework;
 using UnityEngine;
 using static UnityEngine.Rendering.DebugUI.Table;
+using System.Collections.Generic;
 
 public class ScreenManager : MonoBehaviour
 {
+    public List<GameObject> generatedScreens = new List<GameObject>();
+
+    public List<GameObject> GetGeneratedScreens() { return generatedScreens; }
     public enum LayoutType
     {
         Linear,
         Grid
     }
+    
 
     [SerializeField] private LayoutType layoutType;
 
@@ -32,8 +38,10 @@ public class ScreenManager : MonoBehaviour
     {
         if(layoutType == LayoutType.Linear) GenerateLinearScreens();
         else if(layoutType == LayoutType.Grid) GenerateGridScreens();
+        print(generatedScreens.Count);
     }
 
+    
     void GenerateLinearScreens()
     {
         float centerOffset = (screenCount - 1) / 2;
@@ -77,9 +85,10 @@ public class ScreenManager : MonoBehaviour
 
                 // Screens werden erzeugt und Werte, werden übergeben
                 GameObject neuerScreen = Instantiate(screenPrefab);
-                
+                generatedScreens.Add(neuerScreen);
+                print(generatedScreens.Count);
+                print(gameObject.name);
                 neuerScreen.transform.SetParent(screenContainer);
-
                 neuerScreen.transform.position = position;
 
                 // muss in Quaternion umgewandelt werden, da unity Quaternion erwartet und nicht Vector3
