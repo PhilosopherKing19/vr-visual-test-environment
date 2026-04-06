@@ -827,6 +827,7 @@ MonoBehaviour:
   Screen2: {x: 4, y: 1, z: 1}
   Screen3: {x: 6, y: 1, z: 1}
   screenPrefab: {fileID: 3498186372790059900, guid: 0ce625726bf7b9f4d9f96421dd15251c, type: 3}
+  landoltRingSprite: {fileID: 0}
 --- !u!4 &1913722391
 Transform:
   m_ObjectHideFlags: 0
