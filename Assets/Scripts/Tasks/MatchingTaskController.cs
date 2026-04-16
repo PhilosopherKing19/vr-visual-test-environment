@@ -35,6 +35,8 @@ public class MatchingTaskController : MonoBehaviour
     private UnityEngine.UI.Image ringImage;
     private TextMeshProUGUI tableText;
     private GameObject tableContainer;
+    private GameObject letterRow;
+    private GameObject ringRow;
 
 
 
@@ -108,8 +110,13 @@ public class MatchingTaskController : MonoBehaviour
 
         //Screen3
         GameObject tabelObj = new GameObject("tableText");
+
+        
+
         tabelObj.transform.SetParent(canvas3.transform, false);
         tableText = tabelObj.AddComponent<TextMeshProUGUI>();
+
+
 
         rect = tabelObj.GetComponent<RectTransform>();
         rect.anchorMin = Vector2.zero;
@@ -127,16 +134,56 @@ public class MatchingTaskController : MonoBehaviour
         rect.offsetMin = Vector2.zero;
         rect.offsetMax = Vector2.zero;
 
-        GridLayoutGroup grid = tableContainer.AddComponent<GridLayoutGroup>();
+        
+
+
+        GameObject letterRowObj = new GameObject("LetterRow");
+        letterRowObj.AddComponent<RectTransform>();
+        letterRowObj.transform.SetParent(tableContainer.transform, false);
+        
+
+        rect = letterRowObj.GetComponent<RectTransform>();
+        rect.anchorMin = Vector2.zero;
+        rect.anchorMax = Vector2.one;
+        rect.offsetMin = Vector2.zero;
+        rect.offsetMax = Vector2.zero;
+
+        GridLayoutGroup grid = letterRowObj.AddComponent<GridLayoutGroup>();
         grid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
         grid.constraintCount = 8;
-        grid.cellSize = new Vector2(50, 50);
+        grid.cellSize = new Vector2(100, 100);
+        grid.padding.bottom = 200;
+        grid.childAlignment = TextAnchor.MiddleCenter;
 
+        letterRow = letterRowObj;
+
+        GameObject ringRowObj = new GameObject("RingRow");
+        ringRowObj.AddComponent<RectTransform>();
+        ringRowObj.transform.SetParent(tableContainer.transform, false);
+       
+
+        rect = ringRowObj.GetComponent<RectTransform>();
+        rect.anchorMin = Vector2.zero;
+        rect .anchorMax = Vector2.one;
+        rect.offsetMin = Vector2.zero;
+        rect.offsetMax = Vector2.zero;
+
+        grid = ringRowObj.AddComponent<GridLayoutGroup>();
+        grid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+        grid.constraintCount = 8;
+        grid.cellSize = new Vector2(100, 100);
+        grid.padding.top = 200;
+        grid.childAlignment = TextAnchor.MiddleCenter;
+        ringRow = ringRowObj;
     }
 
     private void DisplayTrial()
     {
-        foreach(Transform child in tableContainer.transform)
+        foreach (Transform child in letterRow.transform)
+        {
+            Destroy(child.gameObject);
+        }
+        foreach (Transform child in ringRow.transform)
         {
             Destroy(child.gameObject);
         }
@@ -151,15 +198,16 @@ public class MatchingTaskController : MonoBehaviour
         foreach( int i in shuffled)
         {
             GameObject letterCell = new GameObject("LetterCell");
-            letterCell.transform.SetParent(tableContainer.transform, false);
+            letterCell.transform.SetParent(letterRow.transform, false);
             TextMeshProUGUI cellText = letterCell.AddComponent<TextMeshProUGUI>();
             cellText.text = sloanLetters[i];
+            cellText.fontSize = 4 * 36;
         }
         // line with Landolt-C-Rings
         foreach(int i in shuffled)
         {
             GameObject ringCell = new GameObject("RingCell");
-            ringCell.transform.SetParent(tableContainer.transform, false);
+            ringCell.transform.SetParent(ringRow.transform, false);
             UnityEngine.UI.Image cellImg = ringCell.AddComponent<UnityEngine.UI.Image>();
             cellImg.sprite = landoltRingSprite;
             cellImg.transform.rotation = Quaternion.Euler(0, 0, landoltCRings[i]);
@@ -199,6 +247,8 @@ public class MatchingTaskController : MonoBehaviour
         canvas3 = screens[2].GetComponentInChildren<Canvas>();
 
         SetupScreens();
+        Debug.Log("LetterRow parent: " + letterRow.transform.parent.name);
+        Debug.Log("RingRow parent: " + ringRow.transform.parent.name);
         StartTrial();
     }
 
