@@ -179,7 +179,7 @@ Camera:
     height: 1
   near clip plane: 0.3
   far clip plane: 1000
-  field of view: 60
+  field of view: 16
   orthographic: 0
   orthographic size: 5
   m_Depth: -1
@@ -206,7 +206,7 @@ Transform:
   m_GameObject: {fileID: 330585543}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: -10}
+  m_LocalPosition: {x: 1, y: 1, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -383,6 +383,74 @@ MonoBehaviour:
   m_ShadowLayerMask: 1
   m_RenderingLayers: 1
   m_ShadowRenderingLayers: 1
+--- !u!1 &597813960
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 597813963}
+  - component: {fileID: 597813962}
+  m_Layer: 0
+  m_Name: ComparativeSearchTask
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &597813962
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 597813960}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eb4eb1d84cb5268428f35241b19a0e5a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ComparativeSearchTask
+  screenPrefab: {fileID: 3498186372790059900, guid: 0ce625726bf7b9f4d9f96421dd15251c, type: 3}
+  activeScreenIndex: 2
+  layoutType: 0
+  screenCount: 5
+  rowCount: 2
+  columnCount: 3
+  GeometricSprites:
+  - {fileID: 21300000, guid: c112c869cf52b1746bd2724af3d0edec, type: 3}
+  - {fileID: 21300000, guid: e3c1af3b89d83484cb629d424addbb2d, type: 3}
+  - {fileID: 21300000, guid: 4e75ae07d09342c42acbaa678207346e, type: 3}
+  objectsPerScreen: 30
+  currentMismatchType: 0
+  landoltC: {fileID: 21300000, guid: fbb6c1b7f5d60164ca46cbf267373598, type: 3}
+  tumblingE: {fileID: 21300000, guid: 53227d3ea82652e40859e75f6f6ec8c6, type: 3}
+  sloanLetterSprites:
+  - {fileID: 21300000, guid: da5d48db91c4fd5478b639788c6bca52, type: 3}
+  - {fileID: 21300000, guid: 7ccba61ccbdac954fbc2a2251d9acccd, type: 3}
+  - {fileID: 21300000, guid: 56c7fc8c6af2e014cbd06d46cd144526, type: 3}
+  - {fileID: 21300000, guid: 029008f882f1b884fbc4c8e40988acc2, type: 3}
+  - {fileID: 21300000, guid: d33ea7273dcdf5c42821882c09b7ec6e, type: 3}
+  - {fileID: 21300000, guid: 84e765e6117f6ba46aa7540bc5362e77, type: 3}
+  - {fileID: 21300000, guid: 3b307520f15161944a94334803802721, type: 3}
+  - {fileID: 21300000, guid: 1367bfd5eb34ff4479141b2b5566d1ee, type: 3}
+  currentStimuliSet: 2
+--- !u!4 &597813963
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 597813960}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 4.30218, y: 0, z: -13.28537}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &754957572
 GameObject:
   m_ObjectHideFlags: 0
@@ -399,7 +467,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &754957573
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -413,7 +481,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ScreenManager
   generatedScreens: []
-  layoutType: 1
+  layoutType: 0
   screenPrefab: {fileID: 3498186372790059900, guid: 0ce625726bf7b9f4d9f96421dd15251c, type: 3}
   screenCount: 3
   horizontalSpacing: 1.5
@@ -422,7 +490,6 @@ MonoBehaviour:
   defaultRotation: {x: 0, y: 180, z: 0}
   screenContainer: {fileID: 0}
   screenContainerPrefab: {fileID: 0}
-  centerLayout: 1
   verticalSpacing: 1
   rowCount: 2
   columnCount: 2
@@ -784,7 +851,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1913722389
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -807,7 +874,6 @@ MonoBehaviour:
   defaultRotation: {x: 0, y: 180, z: 0}
   screenContainer: {fileID: 0}
   screenContainerPrefab: {fileID: 0}
-  centerLayout: 1
   verticalSpacing: 1
   rowCount: 2
   columnCount: 2
@@ -973,3 +1039,4 @@ SceneRoots:
   - {fileID: 1517116904}
   - {fileID: 754957574}
   - {fileID: 1913722391}
+  - {fileID: 597813963}

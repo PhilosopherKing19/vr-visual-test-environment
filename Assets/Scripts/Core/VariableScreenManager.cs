@@ -3,7 +3,7 @@ using UnityEngine;
 using static UnityEngine.Rendering.DebugUI.Table;
 using System.Collections.Generic;
 
-public class ScreenManager : MonoBehaviour
+public class VariableScreenManager : MonoBehaviour
 {
     public List<GameObject> generatedScreens = new List<GameObject>();
 
@@ -26,7 +26,7 @@ public class ScreenManager : MonoBehaviour
     [SerializeField] private Vector3 defaultRotation = new Vector3(0f,180f,0f);
     [SerializeField] private Transform screenContainer;
     [SerializeField] private GameObject screenContainerPrefab;
-    [SerializeField] private bool centerLayout = true;
+    //[SerializeField] private bool centerLayout = true;
 
     // Grid layout settings
     [SerializeField] private float verticalSpacing;
@@ -36,9 +36,9 @@ public class ScreenManager : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        if(layoutType == LayoutType.Linear) GenerateLinearScreens();
-        else if(layoutType == LayoutType.Grid) GenerateGridScreens();
-        print(generatedScreens.Count);
+      //  if(layoutType == LayoutType.Linear) GenerateLinearScreens();
+      //  else if(layoutType == LayoutType.Grid) GenerateGridScreens();
+      //  print(generatedScreens.Count);
     }
 
     
@@ -59,6 +59,28 @@ public class ScreenManager : MonoBehaviour
             // muss in Quaternion umgewandelt werden, da unity Quaternion erwartet und nicht Vector3
             neuerScreen.transform.rotation = Quaternion.Euler(defaultRotation);
         }
+    }
+
+    public List<GameObject> GenerateLinearScreens(int count)
+    {
+        List<GameObject> screens = new List<GameObject>();
+        float centerOffset = (count - 1) / 2;
+        for (int i = 1; i <= count; i++)
+        {   // Werte der Screens werden berrechnet
+            float y = startPosition.y;
+            float z = startPosition.z + i * depthSpacing;
+            float x = (i - centerOffset) * horizontalSpacing;
+            Vector3 position = new Vector3(x, y, z);
+
+            // Screens werden erzeugt und Werte, werden übergeben
+            GameObject neuerScreen = Instantiate(screenPrefab);
+            neuerScreen.transform.position = position;
+
+            // muss in Quaternion umgewandelt werden, da unity Quaternion erwartet und nicht Vector3
+            neuerScreen.transform.rotation = Quaternion.Euler(defaultRotation);
+            screens.Add(neuerScreen);
+        }
+        return screens;
     }
 
 
@@ -97,7 +119,50 @@ public class ScreenManager : MonoBehaviour
             }
         }
     }
+
+
+    public List<GameObject> GenerateGridScreens(int rowCount, int columnCount)
+    {
+        float columnCenterOffset = (columnCount - 1) / 2f;
+        float rowCenterOffset = (rowCount - 1) / 2f;
+        List<GameObject> screens = new List<GameObject>();
+
+        for (int row = 0; row < rowCount; row++)
+        {
+            for (int col = 0; col < columnCount; col++)
+            {
+
+                // x berrechnung
+                float xOffset = (col - columnCenterOffset) * horizontalSpacing;
+                float x = startPosition.x + xOffset;
+
+                // y berrechnung
+                float yOffset = (rowCenterOffset - row) * verticalSpacing;
+                float y = startPosition.y + yOffset;
+
+                // z berrechnung
+                float z = startPosition.z;
+
+                Vector3 position = new Vector3(x, y, z);
+
+                // Screens werden erzeugt und Werte, werden übergeben
+                GameObject neuerScreen = Instantiate(screenPrefab);
+                generatedScreens.Add(neuerScreen);
+                print(generatedScreens.Count);
+                print(gameObject.name);
+                neuerScreen.transform.SetParent(screenContainer);
+                neuerScreen.transform.position = position;
+
+                // muss in Quaternion umgewandelt werden, da unity Quaternion erwartet und nicht Vector3
+                neuerScreen.transform.rotation = Quaternion.Euler(defaultRotation);
+                screens.Add(neuerScreen);
+            }
+        }
+        return screens;
+    }
     // Update is called once per frame
+
+
     void Update()
     {
         
