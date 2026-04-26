@@ -13,22 +13,19 @@ public class VarScreenManager
 
 
 
-    [SerializeField] private LayoutType layoutType;
 
     // Linear layout settings
     [SerializeField] private GameObject screenPrefab;
     [SerializeField] private float horizontalSpacing = 1.5f;
     [SerializeField] private float depthSpacing = 1.0f;
-    [SerializeField] private Vector3 startPosition = new Vector3(0f, 1.5f, 1.5f);
-    [SerializeField] private Vector3 defaultRotation = new Vector3(0f, 0f, 0f);
+    [SerializeField] private Vector3 startPosition = new(0f, 1.5f, 1.5f);
+    [SerializeField] private Vector3 defaultRotation = new(0f, 0f, 0f);
     [SerializeField] private Transform screenContainer;
-    [SerializeField] private GameObject screenContainerPrefab;
-    //[SerializeField] private bool centerLayout = true;
 
     // Grid layout settings
     [SerializeField] private float verticalSpacing;
-    [SerializeField] private int rowCount;
-    [SerializeField] private int columnCount;
+    //[SerializeField] private int rowCount;
+    //[SerializeField] private int columnCount;
 
     public VarScreenManager(GameObject screenPrefab)
     {
@@ -37,14 +34,14 @@ public class VarScreenManager
 
     public List<GameObject> GenerateLinearScreens(int count)
     {
-        List<GameObject> screens = new List<GameObject>();
+        List<GameObject> screens = new();
         float centerOffset = (count - 1) / 2;
         for (int i = 1; i <= count; i++)
         {   // Werte der Screens werden berrechnet
             float y = startPosition.y;
             float z = startPosition.z + i * depthSpacing;
             float x = (i - centerOffset) * horizontalSpacing;
-            Vector3 position = new Vector3(x, y, z);
+            Vector3 position = new(x, y, z);
 
             // Screens werden erzeugt und Werte, werden übergeben
             GameObject neuerScreen = Object.Instantiate(screenPrefab);
@@ -62,7 +59,7 @@ public class VarScreenManager
     {
         float columnCenterOffset = (columnCount - 1) / 2f;
         float rowCenterOffset = (rowCount - 1) / 2f;
-        List<GameObject> screens = new List<GameObject>();
+        List<GameObject> screens = new();
 
         for (int row = 0; row < rowCount; row++)
         {
@@ -80,7 +77,7 @@ public class VarScreenManager
                 // z berrechnung
                 float z = startPosition.z;
 
-                Vector3 position = new Vector3(x, y, z);
+                Vector3 position = new(x, y, z);
 
                 // Screens werden erzeugt und Werte, werden übergeben
                 GameObject neuerScreen = Object.Instantiate(screenPrefab);

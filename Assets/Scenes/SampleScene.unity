@@ -205,13 +205,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 330585543}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1, y: 1, z: -10}
+  m_LocalRotation: {x: 0, y: 1, z: 0, w: 0}
+  m_LocalPosition: {x: -1.5, y: 1, z: 10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
 --- !u!114 &330585547
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -399,7 +399,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &597813962
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -413,11 +413,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ComparativeSearchTask
   screenPrefab: {fileID: 3498186372790059900, guid: 0ce625726bf7b9f4d9f96421dd15251c, type: 3}
-  activeScreenIndex: 2
-  layoutType: 0
-  screenCount: 5
+  layoutType: 1
+  screenCount: 3
   rowCount: 2
   columnCount: 3
+  screenSpacing: 10
+  verticalSpacing: 0
   GeometricSprites:
   - {fileID: 21300000, guid: c112c869cf52b1746bd2724af3d0edec, type: 3}
   - {fileID: 21300000, guid: e3c1af3b89d83484cb629d424addbb2d, type: 3}
@@ -435,7 +436,10 @@ MonoBehaviour:
   - {fileID: 21300000, guid: 84e765e6117f6ba46aa7540bc5362e77, type: 3}
   - {fileID: 21300000, guid: 3b307520f15161944a94334803802721, type: 3}
   - {fileID: 21300000, guid: 1367bfd5eb34ff4479141b2b5566d1ee, type: 3}
-  currentStimuliSet: 2
+  currentStimuliSet: 0
+  randomGrayscale: 1
+  distribution: 1
+  stimuliSpacing: 64
 --- !u!4 &597813963
 Transform:
   m_ObjectHideFlags: 0
@@ -443,6 +447,73 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 597813960}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 4.30218, y: 0, z: -13.28537}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &653137112
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 653137114}
+  - component: {fileID: 653137113}
+  m_Layer: 0
+  m_Name: VisualAcuityTask
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &653137113
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 653137112}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 841c1306913bc654089fea295d9829e1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VisualAcuityTest
+  screenPrefab: {fileID: 3498186372790059900, guid: 0ce625726bf7b9f4d9f96421dd15251c, type: 3}
+  currenStimuliSet: 3
+  finishingSize: 10
+  totalTrials: 10
+  initialSize: 200
+  endOnFinishingSize: 1
+  correctThreshold: 3
+  incorrectThreshold: 1
+  landoltC: {fileID: 21300000, guid: fbb6c1b7f5d60164ca46cbf267373598, type: 3}
+  tumblingE: {fileID: 21300000, guid: 53227d3ea82652e40859e75f6f6ec8c6, type: 3}
+  sloanLetterSprites:
+  - {fileID: 21300000, guid: da5d48db91c4fd5478b639788c6bca52, type: 3}
+  - {fileID: 21300000, guid: 7ccba61ccbdac954fbc2a2251d9acccd, type: 3}
+  - {fileID: 21300000, guid: 56c7fc8c6af2e014cbd06d46cd144526, type: 3}
+  - {fileID: 21300000, guid: 029008f882f1b884fbc4c8e40988acc2, type: 3}
+  - {fileID: 21300000, guid: d33ea7273dcdf5c42821882c09b7ec6e, type: 3}
+  - {fileID: 21300000, guid: 84e765e6117f6ba46aa7540bc5362e77, type: 3}
+  - {fileID: 21300000, guid: 3b307520f15161944a94334803802721, type: 3}
+  - {fileID: 21300000, guid: 1367bfd5eb34ff4479141b2b5566d1ee, type: 3}
+  geometricSprites:
+  - {fileID: 21300000, guid: c112c869cf52b1746bd2724af3d0edec, type: 3}
+  - {fileID: 21300000, guid: e3c1af3b89d83484cb629d424addbb2d, type: 3}
+  - {fileID: 21300000, guid: 4e75ae07d09342c42acbaa678207346e, type: 3}
+--- !u!4 &653137114
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 653137112}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 4.30218, y: 0, z: -13.28537}
@@ -490,7 +561,7 @@ MonoBehaviour:
   defaultRotation: {x: 0, y: 180, z: 0}
   screenContainer: {fileID: 0}
   screenContainerPrefab: {fileID: 0}
-  verticalSpacing: 1
+  verticalSpacing: 5
   rowCount: 2
   columnCount: 2
 --- !u!4 &754957574
@@ -1040,3 +1111,4 @@ SceneRoots:
   - {fileID: 754957574}
   - {fileID: 1913722391}
   - {fileID: 597813963}
+  - {fileID: 653137114}
