@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine.UI;
 using UnityEngine.InputSystem;
+using System.Linq;
+using System.Runtime.CompilerServices;
 
 
 public class MatchingTaskController : MonoBehaviour
@@ -13,52 +15,141 @@ public class MatchingTaskController : MonoBehaviour
     [SerializeField] private Vector3 Screen3;
     [SerializeField] private GameObject screenPrefab;
 
-    [SerializeField] private Sprite landoltRingSprite;
+   // [SerializeField] private Sprite landoltRingSprite;
 
     private ScreenManager1 screenManager;
     private List<GameObject> screens;
 
     private List<Vector3> positions = new List<Vector3>();
-
-    private string[] sloanLetters = { "D", "H", "K", "N", "R", "S", "V", "Z" };
     private float[] landoltCRings = { 0, 45, 90, 135, 180, 225, 270, 315 };
 
-    private int sloanLetterIndex;
-    private int landoltCIndex;
+    private int screenOneIndex;
+    private int screenTwoIndex;
     private bool isMatch;
 
     private Canvas canvas1;
     private Canvas canvas2;
     private Canvas canvas3; 
 
-    private TextMeshProUGUI letterText;
-    private UnityEngine.UI.Image ringImage;
-    private TextMeshProUGUI tableText;
+    private UnityEngine.UI.Image screenOneImage;
+    private UnityEngine.UI.Image screenTwoImage;
+    //private TextMeshProUGUI tableText;
     private GameObject tableContainer;
     private GameObject letterRow;
     private GameObject ringRow;
 
+    //--------------------------------
+    private enum StimuliSet
+    {
+        Shapes,
+        LandoltC,
+        TumblingE,
+        SloanLetters
+    }
+
+    [SerializeField] private StimuliSet screenOneStimuliSet;
+    private Sprite[] screenOneSprites;
+
+    [SerializeField] private StimuliSet screenTwoStimuliSet;
+    private Sprite[] screenTwoSprites;
+
+    [SerializeField] private Sprite landoltCSprite;
+    [SerializeField] private Sprite tumblingESprite;
+
+    [SerializeField] private Sprite[] sloanLetterSprites;
+    [SerializeField] private Sprite[] shapeSprites;
+
+    [SerializeField] private bool randomGrayscale;
+
+    private int[] shuffled;
+    
+    private Color[] color =
+    {
+        new(0.2f, 0.2f, 0.2f), // dunkelgrau
+        new(0.5f, 0.5f, 0.5f), // mittelgrau
+        new(0.8f, 0.8f, 0.8f)  // hellgrau
+    };
+
+    [SerializeField] private bool matchByColor;
+    private int screenOneColorIndex;
+    private int screenTwoColorIndex;
 
 
+    private void SetupStimuliSet()
+    {
+        switch (screenOneStimuliSet)
+        {
+            case StimuliSet.Shapes:
+                screenOneSprites = shapeSprites;
+                break;
+            case StimuliSet .LandoltC:
+                screenOneSprites = Enumerable.Repeat(landoltCSprite, 8).ToArray();
+                break;
+            case StimuliSet.TumblingE:
+                screenOneSprites = Enumerable.Repeat(tumblingESprite, 8).ToArray();
+                break;
+            case StimuliSet .SloanLetters:
+                screenOneSprites = sloanLetterSprites;
+                break;
+        }
+
+        switch (screenTwoStimuliSet)
+        {
+            case StimuliSet.Shapes:
+                screenTwoSprites = shapeSprites;
+                break;
+            case StimuliSet.LandoltC:
+                screenTwoSprites = Enumerable.Repeat(landoltCSprite, 8).ToArray();
+                break;
+            case StimuliSet.TumblingE:
+                screenTwoSprites = Enumerable.Repeat(tumblingESprite, 8).ToArray();
+                break;
+            case StimuliSet.SloanLetters:
+                screenTwoSprites = sloanLetterSprites;
+                break;
+        }
+    }
     private void StartTrial()
     {
-        sloanLetterIndex = Random.Range(0, sloanLetters.Length);
-        landoltCIndex = Random.Range(0, landoltCRings.Length);
+        void SetRandomGrayTones()
+        {
+            if (randomGrayscale)
+            {
+                color = new Color[8];
+                float gray;
+                for (int i = 0; i < color.Length; i++)
+                {
+                    gray = Random.Range(0.2f, 0.8f);
+                    color[i] = new Color(gray, gray, gray);
+                }
+            }
+        }
+
+        SetRandomGrayTones();
+        shuffled = ShuffleIndices();
+        screenOneIndex = shuffled[Random.Range(0, shuffled.Length)];
+        screenTwoIndex = shuffled[Random.Range(0, shuffled.Length)];
+        
 
         isMatch = Random.value > 0.5f;
-
-        if (isMatch)
+        if (matchByColor)
         {
-            landoltCIndex = sloanLetterIndex;
+            screenOneColorIndex = Random.Range(0,color.Length);
+
+            if (isMatch)
+                screenTwoColorIndex = screenOneColorIndex;
+
+            else do screenTwoColorIndex = Random.Range(0, color.Length);
+                while (screenTwoColorIndex == screenOneColorIndex);
         }
         else
         {
-            do
-            {
-                landoltCIndex = Random.Range(0, landoltCRings.Length);
-            } while (landoltCIndex == sloanLetterIndex);
-        }
+            if (isMatch)
+                screenTwoIndex = screenOneIndex;
 
+            else do screenTwoIndex = shuffled[Random.Range(0, shuffled.Length)];
+                while (screenTwoIndex == screenOneIndex);
+        }
         DisplayTrial();
     }
 
@@ -83,135 +174,127 @@ public class MatchingTaskController : MonoBehaviour
 
     private void SetupScreens()
     {
-        // Screen 1
-        GameObject letterObj = new GameObject("LetterText");
-        letterObj.transform.SetParent(canvas1.transform, false);
-        letterText = letterObj.AddComponent<TextMeshProUGUI>();
+        UnityEngine.UI.Image CreateScreenImage(Canvas canvas)
+        {
+            GameObject obj = new("LetterText");
+            obj.transform.SetParent(canvas.transform, false);
+            UnityEngine.UI.Image img = obj.AddComponent<UnityEngine.UI.Image>();
 
-        RectTransform rect = letterObj.GetComponent<RectTransform>();
-        rect.anchorMin = Vector2.zero;
-        rect.anchorMax = Vector2.one;
-        rect.offsetMin = Vector2.zero;
-        rect.offsetMax = Vector2.zero;
+            RectTransform rect = obj.GetComponent<RectTransform>();
+            rect.anchorMin = new Vector2(0.5f, 0.5f);
+            rect.anchorMax = new Vector2(0.5f, 0.5f);
+            rect.sizeDelta = new Vector2(100, 100);
+            rect.anchoredPosition = Vector2.zero;
 
-
-        //Screen2
-        GameObject ringObj = new GameObject("ringImage");
-        ringObj.transform.SetParent(canvas2.transform, false);
-        ringImage = ringObj.AddComponent<UnityEngine.UI.Image>();
-
-        rect = ringObj.GetComponent<RectTransform>();
-        rect.anchorMin = new Vector2(0.5f, 0.5f);
-        rect.anchorMax = new Vector2(0.5f, 0.5f);
-        rect.offsetMin=Vector2.zero;
-        rect.offsetMax=Vector2.zero;
-        rect.sizeDelta = new Vector2(100, 100);
-        rect.anchoredPosition = Vector2.zero;
-
-        //Screen3
-        GameObject tabelObj = new GameObject("tableText");
+            return img;
+        }
 
         
+        // Screen 1
+        screenOneImage = CreateScreenImage(canvas1);
+        
+        //Screen2
+        screenTwoImage = CreateScreenImage(canvas2);
 
+        //Screen3
+
+        void SetFullRect(RectTransform r)
+        {
+            r.anchorMin = Vector2.zero;
+            r.anchorMax = Vector2.one;
+            r.offsetMin = Vector2.zero;
+            r.offsetMax = Vector2.zero;
+        }
+
+        GameObject tabelObj = new("tableText");
         tabelObj.transform.SetParent(canvas3.transform, false);
-        tableText = tabelObj.AddComponent<TextMeshProUGUI>();
-
-
-
-        rect = tabelObj.GetComponent<RectTransform>();
-        rect.anchorMin = Vector2.zero;
-        rect.anchorMax = Vector2.one;
-        rect.offsetMin = Vector2.zero;
-        rect.offsetMax = Vector2.zero;
+        tabelObj.AddComponent<RectTransform>();
+        SetFullRect(tabelObj.GetComponent<RectTransform>());
+        //---------------------------------------------------
 
         tableContainer = new GameObject("TableContainer");
         tableContainer.AddComponent<RectTransform>();
         tableContainer.transform.SetParent(canvas3.transform, false);
-        
-        rect = tableContainer.GetComponent<RectTransform>();
-        rect.anchorMin = Vector2.zero;
-        rect.anchorMax = Vector2.one;
-        rect.offsetMin = Vector2.zero;
-        rect.offsetMax = Vector2.zero;
+        SetFullRect(tableContainer.GetComponent<RectTransform>());
+       // ----------------------------------------------------------
+      
+        GameObject CreateGridRow(string name, Transform parent, int padding, bool isTop)
+        {
+            GameObject rowObj = new(name);
+            rowObj.AddComponent<RectTransform>();
+            rowObj.transform.SetParent(parent,false);
+            SetFullRect(rowObj.GetComponent<RectTransform>());
 
-        
+            GridLayoutGroup grid = rowObj.AddComponent<GridLayoutGroup>();
+            grid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+            grid.constraintCount = 8;
+            grid.cellSize = new Vector2(100, 100);
+            grid.childAlignment = TextAnchor.MiddleCenter;
+            if (isTop) grid.padding.top = padding;
+            else grid.padding.bottom = padding;
 
+            return rowObj;
 
-        GameObject letterRowObj = new GameObject("LetterRow");
-        letterRowObj.AddComponent<RectTransform>();
-        letterRowObj.transform.SetParent(tableContainer.transform, false);
-        
+        }
 
-        rect = letterRowObj.GetComponent<RectTransform>();
-        rect.anchorMin = Vector2.zero;
-        rect.anchorMax = Vector2.one;
-        rect.offsetMin = Vector2.zero;
-        rect.offsetMax = Vector2.zero;
-
-        GridLayoutGroup grid = letterRowObj.AddComponent<GridLayoutGroup>();
-        grid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
-        grid.constraintCount = 8;
-        grid.cellSize = new Vector2(100, 100);
-        grid.padding.bottom = 200;
-        grid.childAlignment = TextAnchor.MiddleCenter;
-
-        letterRow = letterRowObj;
-
-        GameObject ringRowObj = new GameObject("RingRow");
-        ringRowObj.AddComponent<RectTransform>();
-        ringRowObj.transform.SetParent(tableContainer.transform, false);
-       
-
-        rect = ringRowObj.GetComponent<RectTransform>();
-        rect.anchorMin = Vector2.zero;
-        rect .anchorMax = Vector2.one;
-        rect.offsetMin = Vector2.zero;
-        rect.offsetMax = Vector2.zero;
-
-        grid = ringRowObj.AddComponent<GridLayoutGroup>();
-        grid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
-        grid.constraintCount = 8;
-        grid.cellSize = new Vector2(100, 100);
-        grid.padding.top = 200;
-        grid.childAlignment = TextAnchor.MiddleCenter;
-        ringRow = ringRowObj;
+        letterRow = CreateGridRow("LetterRow",tableContainer.transform, 200, false);
+        ringRow = CreateGridRow("RingRow", tableContainer.transform, 200, true);
     }
 
+    private void ApplyRotation(UnityEngine.UI.Image img, int index, StimuliSet stimuliSet)
+    {
+        switch (stimuliSet)
+        {
+            case StimuliSet.LandoltC:
+            case StimuliSet.TumblingE:
+                img.transform.rotation = Quaternion.Euler(0, 0, landoltCRings[index]);
+                break;
+        }
+    }
     private void DisplayTrial()
     {
+        void SetColor(UnityEngine.UI.Image img)
+        {
+                int i = Random.Range(0, color.Length);
+                img.color = color[i];
+        }
+
         foreach (Transform child in letterRow.transform)
-        {
-            Destroy(child.gameObject);
-        }
+           Destroy(child.gameObject);
+        
         foreach (Transform child in ringRow.transform)
-        {
             Destroy(child.gameObject);
-        }
-        //-----
-        letterText.text = sloanLetters[sloanLetterIndex];
 
-        ringImage.sprite=landoltRingSprite;
-        ringImage.transform.rotation = Quaternion.Euler(0,0, landoltCRings[landoltCIndex]);
+        //-----------------------------------------------------------------
+        void CreateCell(string name, Transform parent, Sprite[] sprites, StimuliSet stimuliSet, int index)
+        {
+            GameObject cell = new(name);
+            cell.transform.SetParent(parent, false);
+            UnityEngine.UI.Image img = cell.AddComponent<UnityEngine.UI.Image>();
+            img.sprite = sprites[index];
 
-        int[] shuffled = ShuffleIndices();
-        // line with letters
-        foreach( int i in shuffled)
-        {
-            GameObject letterCell = new GameObject("LetterCell");
-            letterCell.transform.SetParent(letterRow.transform, false);
-            TextMeshProUGUI cellText = letterCell.AddComponent<TextMeshProUGUI>();
-            cellText.text = sloanLetters[i];
-            cellText.fontSize = 4 * 36;
+            SetColor(img);
+            ApplyRotation(img, index, stimuliSet);                                  
         }
-        // line with Landolt-C-Rings
-        foreach(int i in shuffled)
-        {
-            GameObject ringCell = new GameObject("RingCell");
-            ringCell.transform.SetParent(ringRow.transform, false);
-            UnityEngine.UI.Image cellImg = ringCell.AddComponent<UnityEngine.UI.Image>();
-            cellImg.sprite = landoltRingSprite;
-            cellImg.transform.rotation = Quaternion.Euler(0, 0, landoltCRings[i]);
-        }
+
+        //-----screenOne
+        screenOneImage.sprite = screenOneSprites[screenOneIndex];
+        if (matchByColor) screenOneImage.color = color[screenOneColorIndex];
+        else SetColor(screenOneImage);
+        ApplyRotation(screenOneImage, screenOneIndex, screenOneStimuliSet);
+        
+        //-----screenTwo
+        screenTwoImage.sprite = screenTwoSprites[screenTwoIndex];
+        if (matchByColor) screenTwoImage.color = color[screenTwoColorIndex];
+        else SetColor(screenTwoImage);
+        ApplyRotation(screenTwoImage, screenTwoIndex, screenTwoStimuliSet);
+
+        // filling the Table
+        foreach ( int i in shuffled)
+            CreateCell("LetterCell", letterRow.transform, screenOneSprites, screenOneStimuliSet, i);
+
+        foreach (int i in shuffled)
+            CreateCell("RingCell", ringRow.transform, screenTwoSprites, screenTwoStimuliSet, i);
 
     }
 
@@ -230,9 +313,6 @@ public class MatchingTaskController : MonoBehaviour
         return indices;
     }
 
-
-    
-    
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -245,10 +325,8 @@ public class MatchingTaskController : MonoBehaviour
         canvas1 = screens[0].GetComponentInChildren<Canvas>();
         canvas2 = screens[1].GetComponentInChildren<Canvas>();
         canvas3 = screens[2].GetComponentInChildren<Canvas>();
-
+        SetupStimuliSet();
         SetupScreens();
-        Debug.Log("LetterRow parent: " + letterRow.transform.parent.name);
-        Debug.Log("RingRow parent: " + ringRow.transform.parent.name);
         StartTrial();
     }
 

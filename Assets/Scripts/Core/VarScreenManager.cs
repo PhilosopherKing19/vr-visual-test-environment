@@ -45,10 +45,9 @@ public class VarScreenManager
 
             // Screens werden erzeugt und Werte, werden übergeben
             GameObject neuerScreen = Object.Instantiate(screenPrefab);
-            neuerScreen.transform.position = position;
-
+            
             // muss in Quaternion umgewandelt werden, da unity Quaternion erwartet und nicht Vector3
-            neuerScreen.transform.rotation = Quaternion.Euler(defaultRotation);
+            neuerScreen.transform.SetPositionAndRotation(position, Quaternion.Euler(defaultRotation));
             screens.Add(neuerScreen);
         }
         return screens;
@@ -62,10 +61,8 @@ public class VarScreenManager
         List<GameObject> screens = new();
 
         for (int row = 0; row < rowCount; row++)
-        {
             for (int col = 0; col < columnCount; col++)
             {
-
                 // x berrechnung
                 float xOffset = (col - columnCenterOffset) * horizontalSpacing;
                 float x = startPosition.x + xOffset;
@@ -88,7 +85,6 @@ public class VarScreenManager
                 neuerScreen.transform.rotation = Quaternion.Euler(defaultRotation);
                 screens.Add(neuerScreen);
             }
-        }
         return screens;
     }
 
