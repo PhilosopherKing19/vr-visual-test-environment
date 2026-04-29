@@ -5,6 +5,7 @@ using UnityEngine.UI;
 using UnityEngine.InputSystem;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.IO;
 
 
 public class MatchingTaskController : MonoBehaviour
@@ -74,6 +75,9 @@ public class MatchingTaskController : MonoBehaviour
     private int screenOneColorIndex;
     private int screenTwoColorIndex;
 
+    private string csvPath;
+    private int trialNumber;
+    private float trialStartTime;
 
     private void SetupStimuliSet()
     {
@@ -125,6 +129,7 @@ public class MatchingTaskController : MonoBehaviour
             }
         }
 
+        trialStartTime = Time.time;
         SetRandomGrayTones();
         shuffled = ShuffleIndices();
         screenOneIndex = shuffled[Random.Range(0, shuffled.Length)];
@@ -162,13 +167,13 @@ public class MatchingTaskController : MonoBehaviour
     private void EvaluateResponse(bool playerAnswer)
     {
         if (playerAnswer == isMatch)
-        {
             Debug.Log("Richtig!");
-        }
         else
-        {
             Debug.Log("Falsch!");
-        }
+
+        float responseTime = Time.time - trialStartTime;
+        SaveToCSV((playerAnswer == isMatch), playerAnswer, responseTime);
+        trialNumber++;
         StartTrial();
     }
 
@@ -313,9 +318,21 @@ public class MatchingTaskController : MonoBehaviour
         return indices;
     }
 
+    private void SaveToCSV(bool correct, bool playerAnswer, float responseTime)
+    {
+        string line = $"{trialNumber},{responseTime},{isMatch},{playerAnswer},{correct},{matchByColor}\n";
+        File.AppendAllText(csvPath, line);
+    }
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
+
+        string timestamp = System.DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
+        csvPath = Application.persistentDataPath + "/matching_task_" + timestamp + ".csv";
+        File.WriteAllText(csvPath, "TrialNumber,ResponseTime,,IsMatch,PlayerAnswer,Correct,MatchByColor\n");
+
+        trialStartTime = Time.time;
         positions.Add(Screen1);
         positions.Add(Screen2);
         positions.Add(Screen3);

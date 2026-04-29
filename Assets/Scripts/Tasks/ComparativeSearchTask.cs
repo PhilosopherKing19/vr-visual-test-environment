@@ -376,7 +376,7 @@ public class ComparativeSearchTask : MonoBehaviour
 
         string timestamp = System.DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
         csvPath = Application.persistentDataPath + "/comparative_search_" + timestamp + ".csv";
-        File.WriteAllText(csvPath, "TrialNumber,ResponseTime,HasMismatch,MismatchScreenIndex,PlayerAnswer,Correct,MismatchType\n");
+        File.WriteAllText(csvPath, "TrialNumber,ResponseTime,,HasMismatch,MismatchScreenIndex,PlayerAnswer,Correct,MismatchType\n");
 
         SetupStimuliSet();
 
