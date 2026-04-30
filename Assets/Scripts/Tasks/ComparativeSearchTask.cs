@@ -8,17 +8,19 @@ using System.Linq;
 
 public class ComparativeSearchTask : MonoBehaviour
 {
-    private enum LayoutType { Linear, Grid}
+    //private enum LayoutType { Linear, Grid}
 
-    private VarScreenManager screenManager;
+    //private VarScreenManager screenManager;
+    private ScreenManager1 screenManager1;
+    [SerializeField] private List<Vector3> screenPositions;
     [SerializeField] private GameObject screenPrefab;
-    [SerializeField] private LayoutType layoutType;
-    [SerializeField] private int screenCount;
-    [SerializeField] private int rowCount;
-    [SerializeField] private int columnCount;
+    //[SerializeField] private LayoutType layoutType;
+    //[SerializeField] private int screenCount;
+    //[SerializeField] private int rowCount;
+    //[SerializeField] private int columnCount;
     private List<GameObject> screens;
-    [SerializeField] private float screenSpacing;
-    [SerializeField] private float verticalSpacing;
+    //[SerializeField] private float screenSpacing;
+    //[SerializeField] private float verticalSpacing;
     
 
     
@@ -292,11 +294,11 @@ public class ComparativeSearchTask : MonoBehaviour
                     break;
             }
 
-            offset = i * (ScreenSize() + screenSpacing) * 0.001f;
-            if(layoutType == LayoutType.Linear)
+            //offset = i * (ScreenSize() + screenSpacing) * 0.001f;
+            /*if(layoutType == LayoutType.Linear)
             screens[i].transform.position = new Vector3(offset,
                                                         screens[i].transform.position.y,
-                                                        screens[i].transform.position.z);
+                                                        screens[i].transform.position.z);*/
 
             
         }
@@ -380,21 +382,33 @@ public class ComparativeSearchTask : MonoBehaviour
 
         SetupStimuliSet();
 
-        screenManager = new VarScreenManager(screenPrefab);
-        if (layoutType == LayoutType.Linear) screens = screenManager.GenerateLinearScreens(screenCount); 
-        else screens = screenManager.GenerateGridScreens(rowCount, columnCount);
-        
+        //screenManager = new VarScreenManager(screenPrefab);
+        //if (layoutType == LayoutType.Linear) screens = screenManager.GenerateLinearScreens(screenCount); 
+        //else screens = screenManager.GenerateGridScreens(rowCount, columnCount);
+
+        screenManager1 = new ScreenManager1(screenPrefab,new Vector3(0f,0f,0f));
+        screens = screenManager1.GenerateScreens(screenPositions);
+
         GenerateTrial();
         GenerateObjects();
         AdjustScreenSize();
         
         
     }
-
+    void UpdatePositions()
+    {
+        for (int i = 0; i < screens.Count; i++)
+        {
+            screens[i].transform.position = screenPositions[i];
+            float scale = Mathf.Max(0.1f,Mathf.Abs(screenPositions[i].z));
+            screens[i].transform.localScale = new Vector3(scale, scale, 1f);
+        }
+    }
     // Update is called once per frame
     void Update()
     {
         HandleInput();
+        UpdatePositions();
     }
 }
 
