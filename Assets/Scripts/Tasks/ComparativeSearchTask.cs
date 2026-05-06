@@ -80,6 +80,7 @@ public class ComparativeSearchTask : MonoBehaviour
 
     [SerializeField] private Distribution distribution;
     [SerializeField] private float stimuliSpacing;
+    
 
     
     
@@ -238,8 +239,23 @@ public class ComparativeSearchTask : MonoBehaviour
             return startXY;
         }
 
+        bool IsTooClose(Vector2 newPos, int currentIndex)
+        {
+            for (int i = 0; i < currentIndex; i++)
+                if(Vector2.Distance(newPos, baseObjects[i].GetPosition()) < stimuliSpacing)
+                    return true;
+            return false;
+        }
         switch (distribution)
         {
+
+            case Distribution.Random:
+                Vector2 newPos;
+                do newPos = new Vector2(Random.Range(-400f, 400f), Random.Range(-300f, 300f));
+                while (IsTooClose(newPos, index));
+                
+                return newPos;
+            
             case Distribution.Column:
                 
                 return new(0f, calculateCenter() - index * stimuliSpacing);

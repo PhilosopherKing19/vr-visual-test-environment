@@ -63,13 +63,8 @@ public class MatchingTaskController : MonoBehaviour
     [SerializeField] private bool randomGrayscale;
 
     private int[] shuffled;
-    
-    private Color[] color =
-    {
-        new(0.2f, 0.2f, 0.2f), // dunkelgrau
-        new(0.5f, 0.5f, 0.5f), // mittelgrau
-        new(0.8f, 0.8f, 0.8f)  // hellgrau
-    };
+
+    [SerializeField] private Color[] color;
 
     [SerializeField] private bool matchByColor;
     private int screenOneColorIndex;

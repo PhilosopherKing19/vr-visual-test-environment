@@ -206,7 +206,7 @@ Transform:
   m_GameObject: {fileID: 330585543}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 1, z: 0, w: 0}
-  m_LocalPosition: {x: 6, y: 1, z: 12}
+  m_LocalPosition: {x: -1, y: 1, z: 12}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -399,7 +399,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &597813962
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -427,7 +427,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: 64b01e63e3db7dd4d899448fa8baa662, type: 3}
   - {fileID: 21300000, guid: 4e75ae07d09342c42acbaa678207346e, type: 3}
   objectsPerScreen: 30
-  currentMismatchType: 0
+  currentMismatchType: 1
   landoltC: {fileID: 21300000, guid: fbb6c1b7f5d60164ca46cbf267373598, type: 3}
   tumblingE: {fileID: 21300000, guid: 53227d3ea82652e40859e75f6f6ec8c6, type: 3}
   sloanLetterSprites:
@@ -439,7 +439,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: 84e765e6117f6ba46aa7540bc5362e77, type: 3}
   - {fileID: 21300000, guid: 3b307520f15161944a94334803802721, type: 3}
   - {fileID: 21300000, guid: 1367bfd5eb34ff4479141b2b5566d1ee, type: 3}
-  currentStimuliSet: 0
+  currentStimuliSet: 1
   randomGrayscale: 1
   distribution: 0
   stimuliSpacing: 64
@@ -488,7 +488,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::VisualAcuityTest
   screenPrefab: {fileID: 3498186372790059900, guid: 0ce625726bf7b9f4d9f96421dd15251c, type: 3}
-  currenStimuliSet: 0
+  currenStimuliSet: 3
   finishingSize: 10
   totalTrials: 10
   initialSize: 200
@@ -925,7 +925,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &1913722389
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -990,7 +990,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: e3c1af3b89d83484cb629d424addbb2d, type: 3}
   - {fileID: 21300000, guid: e8c99c19b2566324abc760e30fa61b76, type: 3}
   randomGrayscale: 0
-  matchByColor: 1
+  matchByColor: 0
 --- !u!4 &1913722391
 Transform:
   m_ObjectHideFlags: 0
