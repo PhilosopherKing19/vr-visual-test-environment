@@ -73,6 +73,11 @@ mono_crash.*
 *.unitypackage.meta
 *.app
 
+
+# added by me
+*.zip
+*.fbx
+
 # Crashlytics generated file
 crashlytics-build.properties
 
