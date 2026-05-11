@@ -13,6 +13,7 @@ public class ComparativeSearchTask : MonoBehaviour
     //private VarScreenManager screenManager;
     private ScreenManager1 screenManager1;
     [SerializeField] private List<Vector3> screenPositions;
+    [SerializeField] private List<Vector3> screenRotations;   
     [SerializeField] private GameObject screenPrefab;
     //[SerializeField] private LayoutType layoutType;
     //[SerializeField] private int screenCount;
@@ -418,6 +419,8 @@ public class ComparativeSearchTask : MonoBehaviour
             screens[i].transform.position = screenPositions[i];
             float scale = Mathf.Max(0.1f,Mathf.Abs(screenPositions[i].z));
             screens[i].transform.localScale = new Vector3(scale, scale, 1f);
+
+            screens[i].transform.rotation = Quaternion.Euler(screenRotations[i]);
         }
     }
     // Update is called once per frame

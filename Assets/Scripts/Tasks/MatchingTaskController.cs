@@ -14,6 +14,12 @@ public class MatchingTaskController : MonoBehaviour
     [SerializeField] private Vector3 Screen1;
     [SerializeField] private Vector3 Screen2;
     [SerializeField] private Vector3 Screen3;
+
+    [SerializeField] private Vector3 rotation1;
+    [SerializeField] private Vector3 rotation2;
+    [SerializeField] private Vector3 rotation3;
+
+
     [SerializeField] private GameObject screenPrefab;
 
    // [SerializeField] private Sprite landoltRingSprite;
@@ -356,6 +362,10 @@ public class MatchingTaskController : MonoBehaviour
         screens[2].transform.position = Screen3;
         float scale3 = Screen3.z < 0 ? -1 * Screen3.z : Screen3.z;
         screens[2].transform.localScale = new Vector3(scale3, scale3, 1f);
+
+        screens[0].transform.rotation = Quaternion.Euler(rotation1);
+        screens[1].transform.rotation = Quaternion.Euler(rotation2);
+        screens[2].transform.rotation = Quaternion.Euler(rotation3);
 
         HandleInput();
 

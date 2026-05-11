@@ -18,6 +18,9 @@ public class VisualAcuityTest : MonoBehaviour
         SloaneLetters
     }
 
+    [SerializeField] private Vector3 position;
+    [SerializeField] private Vector3 rotation;
+
     [SerializeField] private StimuliSet currenStimuliSet;
     [SerializeField] private float finishingSize;
     [SerializeField] private int totalTrials;
@@ -30,7 +33,6 @@ public class VisualAcuityTest : MonoBehaviour
     private float currentSize;
     private float sizeStep;
     private int trialCount;
-
 
 
     [SerializeField] private int correctThreshold;
@@ -68,6 +70,8 @@ public class VisualAcuityTest : MonoBehaviour
 
     private List<GameObject> answerButtons;
 
+    private float trialStartTime;
+    private float responseTime;
     private void SetupAnswerButtons()
     {
         UnityEngine.UI.Image img;
@@ -151,6 +155,7 @@ public class VisualAcuityTest : MonoBehaviour
     }
     private void DisplayStimulus()
     {
+        trialStartTime = Time.time;
         int index = Random.Range(0, currentSprites.Length);
         currentStimulusIndex = index;
         stimulusImage.sprite = currentSprites[index];
@@ -197,6 +202,8 @@ public class VisualAcuityTest : MonoBehaviour
                 incorrectStreak = 0;
             }
         }
+
+        responseTime = Time.time - trialStartTime;
 
         if (endOnFinishingSize && currentSize <= finishingSize)
         {
@@ -252,7 +259,7 @@ public class VisualAcuityTest : MonoBehaviour
 
     private void SaveToCSV(int playerAnswer, bool correct)
     {
-        string line = $"{trialNumber},{currenStimuliSet},{playerAnswer},{correct},{currentSize},{correctStreak}\n";
+        string line = $"{trialNumber},{currenStimuliSet},{playerAnswer},{correct},{currentSize},{correctStreak},{responseTime}\n";
         File.AppendAllText(csvPath, line);
     }
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -261,7 +268,7 @@ public class VisualAcuityTest : MonoBehaviour
     {
         string timestamp = System.DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
         csvPath = Application.persistentDataPath + "/visual_acuity_" + timestamp + ".csv";
-        File.WriteAllText(csvPath, "TrialNumber,StimuliSet,PlayerAnswer,Correct,CurrentSize,CorrectStreak\n");
+        File.WriteAllText(csvPath, "TrialNumber,StimuliSet,PlayerAnswer,Correct,CurrentSize,CorrectStreak,ResponseTime\n");
     }
     void Start()
     {
@@ -278,6 +285,8 @@ public class VisualAcuityTest : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        screen.transform.position = position;
+        screen.transform.rotation = Quaternion.Euler(rotation);
         if(currenStimuliSet == StimuliSet.TumblingE) HandleInputTumblingE();
         else if(currenStimuliSet == StimuliSet.LandoltC) HandleInputLandoltC();
     }

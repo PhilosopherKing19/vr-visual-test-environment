@@ -7,6 +7,7 @@ using System.IO;
 public class NASATLXTask : MonoBehaviour
 {
     [SerializeField] private string[] questions;
+    [SerializeField] private string[] headers;
     private int currentQuestionIndex;
     private int[] answers;
     private string inputBuffer;
@@ -14,6 +15,8 @@ public class NASATLXTask : MonoBehaviour
     //-----------------------------
 
     [SerializeField] private GameObject screenPrefab;
+    [SerializeField] private Vector3 position;
+    [SerializeField] private Vector3 rotation;
     private GameObject screen;
     private TMPro.TextMeshProUGUI questionText;
     private TMPro.TextMeshProUGUI inputText;
@@ -73,7 +76,7 @@ public class NASATLXTask : MonoBehaviour
     void Start()
     {
         answers = new int[questions.Length];
-        string header = string.Join(",", questions) + "\n";
+        string header = string.Join(",", headers) + "\n";
         string timestamp = System.DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
         csvPath = Application.persistentDataPath + "/nasa_tlx_" + timestamp + ".csv";
         File.WriteAllText(csvPath, header);
@@ -134,6 +137,8 @@ public class NASATLXTask : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        screen.transform.position = position;
+        screen.transform.rotation = Quaternion.Euler(rotation);
         HandleInput();
     }
 }
