@@ -19,6 +19,7 @@ public class MatchingTaskController : MonoBehaviour
     [SerializeField] private Vector3 rotation2;
     [SerializeField] private Vector3 rotation3;
 
+    [SerializeField] private float globalScale;
 
     [SerializeField] private GameObject screenPrefab;
 
@@ -80,6 +81,7 @@ public class MatchingTaskController : MonoBehaviour
     private int trialNumber;
     private float trialStartTime;
 
+    
     private void SetupStimuliSet()
     {
         switch (screenOneStimuliSet)
@@ -352,15 +354,15 @@ public class MatchingTaskController : MonoBehaviour
     void Update()
     {
         screens[0].transform.position = Screen1;
-        float scale1 = Screen1.z < 0 ? -1 * Screen1.z : Screen1.z;
+        float scale1 = Screen1.z * globalScale;
         screens[0].transform.localScale = new Vector3 (scale1, scale1, 1f);
         
         screens[1].transform.position = Screen2;
-        float scale2 = Screen2.z < 0 ? -1 * Screen2.z : Screen2.z;
+        float scale2 = Screen2.z * globalScale;
         screens[1].transform.localScale = new Vector3(scale2, scale2, 1f);
 
         screens[2].transform.position = Screen3;
-        float scale3 = Screen3.z < 0 ? -1 * Screen3.z : Screen3.z;
+        float scale3 = Screen3.z * globalScale;
         screens[2].transform.localScale = new Vector3(scale3, scale3, 1f);
 
         screens[0].transform.rotation = Quaternion.Euler(rotation1);
