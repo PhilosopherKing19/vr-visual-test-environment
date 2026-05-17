@@ -17,6 +17,7 @@ public class NASATLXTask : MonoBehaviour
     [SerializeField] private GameObject screenPrefab;
     [SerializeField] private Vector3 position;
     [SerializeField] private Vector3 rotation;
+    [SerializeField] private float Scale;
     private GameObject screen;
     private TMPro.TextMeshProUGUI questionText;
     private TMPro.TextMeshProUGUI inputText;
@@ -139,6 +140,7 @@ public class NASATLXTask : MonoBehaviour
     {
         screen.transform.position = position;
         screen.transform.rotation = Quaternion.Euler(rotation);
+        screen.transform.localScale = new Vector3(Scale, Scale, 1f);
         HandleInput();
     }
 }

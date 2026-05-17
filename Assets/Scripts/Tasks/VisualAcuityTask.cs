@@ -20,6 +20,7 @@ public class VisualAcuityTest : MonoBehaviour
 
     [SerializeField] private Vector3 position;
     [SerializeField] private Vector3 rotation;
+    [SerializeField] private float Scale;
 
     [SerializeField] private StimuliSet currenStimuliSet;
     [SerializeField] private float finishingSize;
@@ -287,6 +288,7 @@ public class VisualAcuityTest : MonoBehaviour
     {
         screen.transform.position = position;
         screen.transform.rotation = Quaternion.Euler(rotation);
+        screen.transform.localScale = new Vector3(Scale, Scale, 1f);
         if(currenStimuliSet == StimuliSet.TumblingE) HandleInputTumblingE();
         else if(currenStimuliSet == StimuliSet.LandoltC) HandleInputLandoltC();
     }
