@@ -82,6 +82,10 @@ public class NASATLXTask : MonoBehaviour
         csvPath = Application.persistentDataPath + "/nasa_tlx_" + timestamp + ".csv";
         File.WriteAllText(csvPath, header);
         SetupScreen();
+        questionText.color = Color.black;
+        questionText.enableAutoSizing = true;
+        inputText.color = Color.black;
+        inputText.enableAutoSizing = true;
         DisplayQuestion();
     }
 

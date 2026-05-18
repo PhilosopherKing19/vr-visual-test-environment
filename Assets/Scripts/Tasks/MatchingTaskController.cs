@@ -341,7 +341,6 @@ public class MatchingTaskController : MonoBehaviour
         positions.Add(Screen3);
         screenManager = new ScreenManager1(screenPrefab, new Vector3(0f, 180f, 0f));
         screens = screenManager.GenerateScreens(positions);
-
         canvas1 = screens[0].GetComponentInChildren<Canvas>();
         canvas2 = screens[1].GetComponentInChildren<Canvas>();
         canvas3 = screens[2].GetComponentInChildren<Canvas>();
