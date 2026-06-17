@@ -2,77 +2,65 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using System.IO;
-using UnityEngine.UIElements;
 using System.Linq;
 
 
 public class ComparativeSearchTask : MonoBehaviour
 {
-    //private enum LayoutType { Linear, Grid}
-
-    //private VarScreenManager screenManager;
+    // --- Screen setup ---------------------------------------------------
     private ScreenManager1 screenManager1;
     [SerializeField] private List<Vector3> screenPositions;
     [SerializeField] private List<Vector3> screenRotations;
     [SerializeField] private float globalScale = 1;
     [SerializeField] private GameObject screenPrefab;
-    //[SerializeField] private LayoutType layoutType;
-    //[SerializeField] private int screenCount;
-    //[SerializeField] private int rowCount;
-    //[SerializeField] private int columnCount;
     private List<GameObject> screens;
-    //[SerializeField] private float screenSpacing;
-    //[SerializeField] private float verticalSpacing;
-    
 
-    
-    [SerializeField] private Sprite[] GeometricSprites;
+    // --- Object generation ----------------------------------------------
+    [SerializeField] private Sprite[] geometricSprites;
     [SerializeField] private int objectsPerScreen;
-    private Color[] objectColors = new Color[] 
+    private Color[] objectColors = new Color[]
     {
         new(0.2f, 0.2f, 0.2f), // dunkelgrau
         new(0.5f, 0.5f, 0.5f), // mittelgrau
         new(0.8f, 0.8f, 0.8f)  // hellgrau
     };
     private Sprite[] objectShapes;
-    private List<Canvas> canvas = new();
-
+    private List<Canvas> canvases = new();
     private List<ScreenObject> baseObjects;
 
+    // --- Mismatch configuration ----------------------------------------------
     private bool hasMismatch;
     private int mismatchScreenIndex;
-    private enum MismatchType { Color, Shape, Position, Missing};
+    private enum MismatchType { Color, Shape, Position, Missing };
     private int mismatchObjectIndex;
     [SerializeField] private MismatchType currentMismatchType;
 
-
-    //Logging
+    // --- Logging ----------------------------------------------
     private int trialNumber;
     private float trialStartTime;
     private float responseTime;
     private string csvPath;
 
-    // stimuli auswahl
+    // --- Stimuli selection ----------------------------------------------
     private enum StimuliSet
     {
         GeometricShapes,
         LandoltC,
-        SloaneLetters,
+        SloanLetters,
         TumblingE
     }
     [SerializeField] private Sprite landoltC;
-    private float[] landoltCRotations = {0f,45f,90f,135f,180f,225f,270,315f };
+    private readonly float[] landoltCRotations = { 0f, 45f, 90f, 135f, 180f, 225f, 270f, 315f };
     [SerializeField] private Sprite tumblingE;
-    private float[] tumblingERotations = { 0f, 90f, 180f, 270f };
+    private readonly float[] tumblingERotations = { 0f, 90f, 180f, 270f };
     [SerializeField] private Sprite[] sloanLetterSprites;
 
-    [SerializeField]private StimuliSet currentStimuliSet;
+    [SerializeField] private StimuliSet currentStimuliSet;
 
-    // Random Grayscale
+    // --- Random grayscale ----------------------------------------------
     [SerializeField] private bool randomGrayscale;
 
-    //Distribution Type
-
+    // --- Distribution type ----------------------------------------------
     private enum Distribution
     {
         Random,
@@ -83,10 +71,11 @@ public class ComparativeSearchTask : MonoBehaviour
     [SerializeField] private Distribution distribution;
     [SerializeField] private float stimuliSpacing;
 
-   
 
-    
-    
+    // Rotates the stimulus image to the orientation corresponding to
+    // shapeIndex. Only Landolt C and Tumbling E use rotation to encode the
+    // displayed orientation; the other sets rely on distinct sprites
+    // instead and are left unrotated.
     private void ApplyRotation(UnityEngine.UI.Image img, int shapeIndex)
     {
         if (currentStimuliSet == StimuliSet.LandoltC)
@@ -95,38 +84,45 @@ public class ComparativeSearchTask : MonoBehaviour
         else if (currentStimuliSet == StimuliSet.TumblingE)
             img.transform.rotation = Quaternion.Euler(0, 0, tumblingERotations[shapeIndex]);
     }
+
+    // Fills objectShapes with the sprite set selected in the Inspector.
+    // Landolt C and Tumbling E only need a single sprite repeated several
+    // times, since their variation comes from rotation rather than
+    // different sprites.
     private void SetupStimuliSet()
     {
         switch (currentStimuliSet)
         {
             case StimuliSet.GeometricShapes:
-                objectShapes = GeometricSprites; 
+                objectShapes = geometricSprites;
                 break;
             case StimuliSet.LandoltC:
-                objectShapes = Enumerable.Repeat(landoltC,8).ToArray();
+                objectShapes = Enumerable.Repeat(landoltC, 8).ToArray();
                 break;
-            case StimuliSet.SloaneLetters:
+            case StimuliSet.SloanLetters:
                 objectShapes = sloanLetterSprites;
                 break;
             case StimuliSet.TumblingE:
-                objectShapes = Enumerable.Repeat(tumblingE,4).ToArray();
+                objectShapes = Enumerable.Repeat(tumblingE, 4).ToArray();
                 break;
-
         }
     }
 
-    private void GenerateObjects() {
-        
-        
+    // Instantiates the objects for the current trial on every screen,
+    // using the reference set in baseObjects so all screens show the same
+    // objects except for the mismatch object on the mismatch screen. If
+    // random grayscale is enabled, a fresh gray value is assigned to each
+    // object before it is drawn.
+    private void GenerateObjects()
+    {
         float gray;
         Color grayScale;
-        
+
         GameObject obj;
         UnityEngine.UI.Image img;
         RectTransform rect;
 
         ClearScreens();
-
 
         if (randomGrayscale)
             for (int i = 0; i < baseObjects.Count; i++)
@@ -136,17 +132,17 @@ public class ComparativeSearchTask : MonoBehaviour
             }
 
         for (int i = 0; i < screens.Count; i++)
-            canvas.Add(screens[i].GetComponentInChildren<Canvas>());
+            canvases.Add(screens[i].GetComponentInChildren<Canvas>());
 
-        for (int i = 0;i < canvas.Count; i++)
+        for (int i = 0; i < canvases.Count; i++)
             for (int j = 0; j < objectsPerScreen; j++)
             {
                 obj = new GameObject("Object");
                 img = obj.AddComponent<UnityEngine.UI.Image>();
                 rect = obj.GetComponent<RectTransform>();
 
-                obj.transform.SetParent(canvas[i].transform, false);
-                
+                obj.transform.SetParent(canvases[i].transform, false);
+
                 img.sprite = objectShapes[baseObjects[j].GetShapeIndex()];
                 ApplyRotation(img, baseObjects[j].GetShapeIndex());
                 rect.anchoredPosition = baseObjects[j].GetPosition();
@@ -157,22 +153,22 @@ public class ComparativeSearchTask : MonoBehaviour
                     float baseGray = baseObjects[j].GetGrayValue();
                     grayScale = new Color(baseGray, baseGray, baseGray);
                     img.color = grayScale;
-                } 
+                }
                 else img.color = objectColors[baseObjects[j].GetColorIndex()];
-
-                
 
                 if (i == mismatchScreenIndex && j == mismatchObjectIndex)
                 {
                     if (currentMismatchType == MismatchType.Missing) continue;
                     ApplyMismatchToStimuli(img, rect, j);
                 }
-                    
             }
-        
     }
 
-    private void ApplyMismatchToStimuli(UnityEngine.UI.Image img,RectTransform rect, int j)
+    // Modifies the mismatch object's image or position according to the
+    // configured mismatch type. The Missing type is not handled here, since
+    // it is resolved earlier in GenerateObjects by skipping the object
+    // entirely.
+    private void ApplyMismatchToStimuli(UnityEngine.UI.Image img, RectTransform rect, int j)
     {
         switch (currentMismatchType)
         {
@@ -209,11 +205,14 @@ public class ComparativeSearchTask : MonoBehaviour
         }
     }
 
-    private void GenerateTrial() 
+    // Sets up a new trial: generates the reference object set shared by
+    // all screens, then decides whether this trial has a mismatch and, if
+    // so, which screen and object will carry it.
+    private void GenerateTrial()
     {
         trialStartTime = Time.time;
         baseObjects = new List<ScreenObject>();
-        for (int i = 0; i < objectsPerScreen; i++) 
+        for (int i = 0; i < objectsPerScreen; i++)
         {
             baseObjects.Add(new ScreenObject(
                 Random.Range(0, objectShapes.Length),
@@ -223,18 +222,21 @@ public class ComparativeSearchTask : MonoBehaviour
         }
 
         hasMismatch = Random.value > 0.5f;
-        
-       
-        if (hasMismatch){
+
+        if (hasMismatch)
+        {
             mismatchScreenIndex = Random.Range(0, screens.Count);
             mismatchObjectIndex = Random.Range(0, objectsPerScreen);
         }
-        
         else mismatchScreenIndex = -1;
     }
 
+    // Computes the position of object index within a screen, depending on
+    // the configured distribution. Random positions are rejection-sampled
+    // against the objects placed so far to avoid overlap; Row and Column
+    // positions are placed on an evenly spaced line centered on the screen.
     private Vector2 CalculateStimuliPosition(int index)
-    { 
+    {
         float calculateCenter()
         {
             float totalHW = (objectsPerScreen - 1) * stimuliSpacing; // Total Height\Width
@@ -245,47 +247,45 @@ public class ComparativeSearchTask : MonoBehaviour
         bool IsTooClose(Vector2 newPos, int currentIndex)
         {
             for (int i = 0; i < currentIndex; i++)
-                if(Vector2.Distance(newPos, baseObjects[i].GetPosition()) < stimuliSpacing)
+                if (Vector2.Distance(newPos, baseObjects[i].GetPosition()) < stimuliSpacing)
                     return true;
             return false;
         }
+
         switch (distribution)
         {
-
             case Distribution.Random:
                 Vector2 newPos;
                 do newPos = new Vector2(Random.Range(-400f, 400f), Random.Range(-300f, 300f));
                 while (IsTooClose(newPos, index));
-                
+
                 return newPos;
-            
+
             case Distribution.Column:
-                
                 return new(0f, calculateCenter() - index * stimuliSpacing);
 
             case Distribution.Row:
-                
                 return new(calculateCenter() - index * stimuliSpacing, 0f);
 
             default:
                 return new Vector2(Random.Range(-400f, 400f), Random.Range(-300f, 300f));
         }
-
-       
-        
     }
 
+    // Resizes each screen's canvas and background to fit objectsPerScreen
+    // objects along the configured axis, so that no objects fall outside
+    // the screen boundary regardless of how many objects are configured.
+    // Random distribution does not need resizing, since objects are placed
+    // within the screen's existing bounds.
     private void AdjustScreenSize()
     {
-        
         Canvas c;
         UnityEngine.UI.Image bg;
         RectTransform rect;
         RectTransform bgRect;
-        float offset;
 
         float ScreenSize() { return objectsPerScreen * stimuliSpacing; }
-        void SetRect(int i) 
+        void SetRect(int i)
         {
             c = screens[i].GetComponentInChildren<Canvas>();
             bg = screens[i].GetComponentInChildren<UnityEngine.UI.Image>();
@@ -312,40 +312,36 @@ public class ComparativeSearchTask : MonoBehaviour
                 default:
                     break;
             }
-
-            //offset = i * (ScreenSize() + screenSpacing) * 0.001f;
-            /*if(layoutType == LayoutType.Linear)
-            screens[i].transform.position = new Vector3(offset,
-                                                        screens[i].transform.position.y,
-                                                        screens[i].transform.position.z);*/
-
-            
         }
-
     }
+
+    // Checks the player's response against the mismatch condition of the
+    // current trial. Answer 0 is reserved for "no difference"; answers
+    // 1..screens.Count correspond to screens 0..screens.Count-1, which is
+    // why the mismatch screen index is compared against answer - 1.
     private void EvaluateResponse(int answer)
     {
         bool correct;
-        if (hasMismatch) correct = answer == mismatchScreenIndex +1;
+        if (hasMismatch) correct = answer == mismatchScreenIndex + 1;
         else correct = answer == 0;
 
         Debug.Log(correct ? "Correct!" : "Wrong!");
         responseTime = Time.time - trialStartTime;
         SaveToCSV(correct, answer);
-        
+
         trialNumber++;
-        
+
         GenerateTrial();
         GenerateObjects();
-
     }
 
+    // Maps number row and numpad keys 0-9 to the corresponding response,
+    // covering one button per screen plus the "no difference" button.
     private void HandleInput()
     {
-        
         if (Keyboard.current.digit0Key.wasPressedThisFrame || Keyboard.current.numpad0Key.wasPressedThisFrame)
             EvaluateResponse(0);
-            
+
         if (Keyboard.current.digit1Key.wasPressedThisFrame || Keyboard.current.numpad1Key.wasPressedThisFrame)
             EvaluateResponse(1);
 
@@ -372,48 +368,47 @@ public class ComparativeSearchTask : MonoBehaviour
 
         if (Keyboard.current.digit9Key.wasPressedThisFrame || Keyboard.current.numpad9Key.wasPressedThisFrame)
             EvaluateResponse(9);
-
-
-
     }
-       
+
+    // Destroys all previously generated objects across all screens and
+    // clears the canvas list, so GenerateObjects can rebuild it from
+    // scratch for the next trial.
     private void ClearScreens()
     {
-        foreach (Canvas c in canvas)
+        foreach (Canvas c in canvases)
             foreach (Transform child in c.transform)
                 if (child.gameObject.name == "Object")
                     Destroy(child.gameObject);
 
-        canvas.Clear();
+        canvases.Clear();
     }
 
+    // Appends one line of trial data to the CSV file, matching the header
+    // written in Start.
     private void SaveToCSV(bool correct, int playerAnswer)
     {
         string line = $"{trialNumber},{responseTime},{hasMismatch},{mismatchScreenIndex},{playerAnswer},{correct},{currentMismatchType}\n";
         File.AppendAllText(csvPath, line);
     }
+
     void Start()  // Start is called once before the first execution of Update after the MonoBehaviour is created
     {
-
         string timestamp = System.DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
         csvPath = Application.persistentDataPath + "/comparative_search_" + timestamp + ".csv";
         File.WriteAllText(csvPath, "TrialNumber,ResponseTime,,HasMismatch,MismatchScreenIndex,PlayerAnswer,Correct,MismatchType\n");
 
         SetupStimuliSet();
 
-        //screenManager = new VarScreenManager(screenPrefab);
-        //if (layoutType == LayoutType.Linear) screens = screenManager.GenerateLinearScreens(screenCount); 
-        //else screens = screenManager.GenerateGridScreens(rowCount, columnCount);
-
-        screenManager1 = new ScreenManager1(screenPrefab,new Vector3(0f,0f,0f));
+        screenManager1 = new ScreenManager1(screenPrefab, new Vector3(0f, 0f, 0f));
         screens = screenManager1.GenerateScreens(screenPositions);
 
         GenerateTrial();
         GenerateObjects();
         AdjustScreenSize();
-        
-        
     }
+
+    // Updates every screen's position, depth-based scale, and rotation
+    // each frame from the configured Inspector values.
     void UpdatePositions()
     {
         for (int i = 0; i < screens.Count; i++)
@@ -425,6 +420,7 @@ public class ComparativeSearchTask : MonoBehaviour
             screens[i].transform.rotation = Quaternion.Euler(screenRotations[i]);
         }
     }
+
     // Update is called once per frame
     void Update()
     {
@@ -433,6 +429,9 @@ public class ComparativeSearchTask : MonoBehaviour
     }
 }
 
+// Stores the shape, color, position, and (optionally) grayscale value of a
+// single object on a screen, used as both the reference object shared
+// across screens and the basis for mismatch modifications.
 public class ScreenObject
 {
     private int shapeIndex;
@@ -448,10 +447,9 @@ public class ScreenObject
     }
 
     public int GetShapeIndex() { return this.shapeIndex; }
-    public int GetColorIndex() {  return this.colorIndex; }
+    public int GetColorIndex() { return this.colorIndex; }
 
-    public void SetGrayValue(float gray){ this.grayValue = gray; }
-    
+    public void SetGrayValue(float gray) { this.grayValue = gray; }
 
     public float GetGrayValue() { return this.grayValue; }
     public Vector2 GetPosition() { return this.position; }

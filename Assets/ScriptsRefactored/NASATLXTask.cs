@@ -1,4 +1,3 @@
-using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -6,31 +5,37 @@ using System.IO;
 
 public class NASATLXTask : MonoBehaviour
 {
+    // --- Questionnaire content ----------------------------------------------
     [SerializeField] private string[] questions;
     [SerializeField] private string[] headers;
     private int currentQuestionIndex;
     private int[] answers;
     private string inputBuffer;
 
-    //-----------------------------
-
+    // --- Screen setup ---------------------------------------------------
     [SerializeField] private GameObject screenPrefab;
     [SerializeField] private Vector3 position;
     [SerializeField] private Vector3 rotation;
-    [SerializeField] private float Scale;
+    [SerializeField] private float scale;
     private GameObject screen;
     private TMPro.TextMeshProUGUI questionText;
     private TMPro.TextMeshProUGUI inputText;
 
-    //-----------------------------
+    // --- CSV logging ----------------------------------------------
     private string csvPath;
+
+    // Builds the question screen with two text fields: one showing the
+    // current question and one showing the digits typed so far. No
+    // numerical scale is displayed alongside the question, since
+    // participants state their rating verbally and the experimenter enters
+    // it through the keyboard.
     private void SetupScreen()
     {
         screen = Object.Instantiate(screenPrefab);
         Canvas screenCanvas = screen.GetComponentInChildren<Canvas>();
 
         TMPro.TextMeshProUGUI CreateText(string name, Vector2 anchorMin, Vector2 anchorMax, int fontsize)
-        { 
+        {
             GameObject obj = new GameObject(name);
             obj.transform.SetParent(screenCanvas.transform, false);
             TMPro.TextMeshProUGUI tmp = obj.AddComponent<TMPro.TextMeshProUGUI>();
@@ -47,20 +52,28 @@ public class NASATLXTask : MonoBehaviour
         inputText = CreateText("InputText", new Vector2(0f, 0.2f), new Vector2(1f, 0.5f), 48);
     }
 
+    // Shows the next question and clears the input buffer so the previous
+    // answer's digits do not carry over.
     private void DisplayQuestion()
     {
         questionText.text = questions[currentQuestionIndex];
         inputText.text = "";
         inputBuffer = "";
     }
+
+    // Stops play mode in the editor or quits the built application,
+    // depending on which environment the task is running in.
     void EndTask()
     {
-        #if UNITY_EDITOR
-            UnityEditor.EditorApplication.isPlaying = false;
-        #else
-            Application.Quit();
-        #endif
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#else
+        Application.Quit();
+#endif
     }
+
+    // Writes the collected answers as a single comma-separated line,
+    // matching the header written in Start, and ends the task.
     private void SaveToCSV()
     {
         string line = "";
@@ -73,6 +86,7 @@ public class NASATLXTask : MonoBehaviour
         File.AppendAllText(csvPath, line);
         EndTask();
     }
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -89,6 +103,12 @@ public class NASATLXTask : MonoBehaviour
         DisplayQuestion();
     }
 
+    // Builds up inputBuffer from individual digit keypresses, allows
+    // deleting the last digit with backspace, and confirms the answer with
+    // enter. The typed value is parsed and stored as is, with no check
+    // against the 1-20 rating range communicated to participants verbally;
+    // validating the entered value is intentionally left to the
+    // experimenter rather than enforced here.
     private void HandleInput()
     {
         if (Keyboard.current.digit0Key.wasPressedThisFrame || Keyboard.current.numpad0Key.wasPressedThisFrame)
@@ -135,8 +155,6 @@ public class NASATLXTask : MonoBehaviour
         }
 
         inputText.text = inputBuffer;
-
-        
     }
 
     // Update is called once per frame
@@ -144,7 +162,7 @@ public class NASATLXTask : MonoBehaviour
     {
         screen.transform.position = position;
         screen.transform.rotation = Quaternion.Euler(rotation);
-        screen.transform.localScale = new Vector3(Scale, Scale, 1f);
+        screen.transform.localScale = new Vector3(scale, scale, 1f);
         HandleInput();
     }
 }

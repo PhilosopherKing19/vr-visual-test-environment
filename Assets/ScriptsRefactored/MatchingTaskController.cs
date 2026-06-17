@@ -1,16 +1,14 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections.Generic;
-using TMPro;
 using UnityEngine.UI;
 using UnityEngine.InputSystem;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.IO;
 
 
 public class MatchingTaskController : MonoBehaviour
 {
-
+    // --- Screen setup ---------------------------------------------------
     [SerializeField] private Vector3 Screen1;
     [SerializeField] private Vector3 Screen2;
     [SerializeField] private Vector3 Screen3;
@@ -23,30 +21,15 @@ public class MatchingTaskController : MonoBehaviour
 
     [SerializeField] private GameObject screenPrefab;
 
-   // [SerializeField] private Sprite landoltRingSprite;
-
     private ScreenManager1 screenManager;
     private List<GameObject> screens;
-
     private List<Vector3> positions = new List<Vector3>();
-    private float[] landoltCRings = { 0, 45, 90, 135, 180, 225, 270, 315 };
-
-    private int screenOneIndex;
-    private int screenTwoIndex;
-    private bool isMatch;
 
     private Canvas canvas1;
     private Canvas canvas2;
-    private Canvas canvas3; 
+    private Canvas canvas3;
 
-    private UnityEngine.UI.Image screenOneImage;
-    private UnityEngine.UI.Image screenTwoImage;
-    //private TextMeshProUGUI tableText;
-    private GameObject tableContainer;
-    private GameObject letterRow;
-    private GameObject ringRow;
-
-    //--------------------------------
+    // --- Stimuli configuration ----------------------------------------------
     private enum StimuliSet
     {
         Shapes,
@@ -67,21 +50,39 @@ public class MatchingTaskController : MonoBehaviour
     [SerializeField] private Sprite[] sloanLetterSprites;
     [SerializeField] private Sprite[] shapeSprites;
 
+    private readonly float[] landoltCRings = { 0, 45, 90, 135, 180, 225, 270, 315 };
+
     [SerializeField] private bool randomGrayscale;
+    [SerializeField] private Color[] colors;
 
-    private int[] shuffled;
-
-    [SerializeField] private Color[] color;
-
+    // --- Match-by-color mode (configurable, unused in the present study) ---
     [SerializeField] private bool matchByColor;
     private int screenOneColorIndex;
     private int screenTwoColorIndex;
 
+    // --- Trial state ----------------------------------------------
+    private int screenOneIndex;
+    private int screenTwoIndex;
+    private bool isMatch;
+    private int[] shuffled;
+
+    // --- Mapping-table UI references ----------------------------------------------
+    private UnityEngine.UI.Image screenOneImage;
+    private UnityEngine.UI.Image screenTwoImage;
+    private GameObject tableContainer;
+    private GameObject letterRow;
+    private GameObject ringRow;
+
+    // --- CSV logging ----------------------------------------------
     private string csvPath;
     private int trialNumber;
     private float trialStartTime;
 
-    
+
+    // Fills the sprite arrays for screen 1 and screen 2 based on the
+    // stimuli set selected for each screen in the Inspector. Landolt C and
+    // Tumbling E only need a single sprite repeated several times, since
+    // their variation comes from rotation rather than different sprites.
     private void SetupStimuliSet()
     {
         switch (screenOneStimuliSet)
@@ -89,13 +90,13 @@ public class MatchingTaskController : MonoBehaviour
             case StimuliSet.Shapes:
                 screenOneSprites = shapeSprites;
                 break;
-            case StimuliSet .LandoltC:
+            case StimuliSet.LandoltC:
                 screenOneSprites = Enumerable.Repeat(landoltCSprite, 8).ToArray();
                 break;
             case StimuliSet.TumblingE:
                 screenOneSprites = Enumerable.Repeat(tumblingESprite, 8).ToArray();
                 break;
-            case StimuliSet .SloanLetters:
+            case StimuliSet.SloanLetters:
                 screenOneSprites = sloanLetterSprites;
                 break;
         }
@@ -116,18 +117,25 @@ public class MatchingTaskController : MonoBehaviour
                 break;
         }
     }
+
+    // Sets up a new trial: optionally regenerates random gray tones, picks
+    // the shuffled mapping order for the table, and chooses the stimuli
+    // shown on screen 1 and screen 2. Whether the trial is a match is
+    // decided first, and the screen 2 stimulus (or color index, in the
+    // match-by-color mode) is then chosen so that it matches or
+    // mismatches the screen 1 stimulus accordingly.
     private void StartTrial()
     {
         void SetRandomGrayTones()
         {
             if (randomGrayscale)
             {
-                color = new Color[8];
+                colors = new Color[8];
                 float gray;
-                for (int i = 0; i < color.Length; i++)
+                for (int i = 0; i < colors.Length; i++)
                 {
                     gray = Random.Range(0.2f, 0.8f);
-                    color[i] = new Color(gray, gray, gray);
+                    colors[i] = new Color(gray, gray, gray);
                 }
             }
         }
@@ -137,17 +145,16 @@ public class MatchingTaskController : MonoBehaviour
         shuffled = ShuffleIndices();
         screenOneIndex = shuffled[Random.Range(0, shuffled.Length)];
         screenTwoIndex = shuffled[Random.Range(0, shuffled.Length)];
-        
 
         isMatch = Random.value > 0.5f;
         if (matchByColor)
         {
-            screenOneColorIndex = Random.Range(0,color.Length);
+            screenOneColorIndex = Random.Range(0, colors.Length);
 
             if (isMatch)
                 screenTwoColorIndex = screenOneColorIndex;
 
-            else do screenTwoColorIndex = Random.Range(0, color.Length);
+            else do screenTwoColorIndex = Random.Range(0, colors.Length);
                 while (screenTwoColorIndex == screenOneColorIndex);
         }
         else
@@ -161,12 +168,15 @@ public class MatchingTaskController : MonoBehaviour
         DisplayTrial();
     }
 
+    // Reads the participant's match/no match response from the keyboard.
     private void HandleInput()
     {
         if (Keyboard.current.yKey.wasPressedThisFrame) EvaluateResponse(true);
-        else if (Keyboard.current.nKey.wasPressedThisFrame) { EvaluateResponse(false); } 
+        else if (Keyboard.current.nKey.wasPressedThisFrame) EvaluateResponse(false);
     }
 
+    // Compares the player's response against the actual match condition,
+    // logs the trial, and starts the next one.
     private void EvaluateResponse(bool playerAnswer)
     {
         if (playerAnswer == isMatch)
@@ -175,11 +185,15 @@ public class MatchingTaskController : MonoBehaviour
             Debug.Log("Falsch!");
 
         float responseTime = Time.time - trialStartTime;
-        SaveToCSV((playerAnswer == isMatch), playerAnswer, responseTime);
+        SaveToCSV(playerAnswer == isMatch, playerAnswer, responseTime);
         trialNumber++;
         StartTrial();
     }
 
+    // Builds the static UI elements for all three screens: the single
+    // stimulus image on screen 1 and screen 2, and the mapping table on
+    // screen 3, consisting of two grid rows that the actual sprites are
+    // filled into for each trial in DisplayTrial.
     private void SetupScreens()
     {
         UnityEngine.UI.Image CreateScreenImage(Canvas canvas)
@@ -197,14 +211,8 @@ public class MatchingTaskController : MonoBehaviour
             return img;
         }
 
-        
-        // Screen 1
         screenOneImage = CreateScreenImage(canvas1);
-        
-        //Screen2
         screenTwoImage = CreateScreenImage(canvas2);
-
-        //Screen3
 
         void SetFullRect(RectTransform r)
         {
@@ -218,19 +226,17 @@ public class MatchingTaskController : MonoBehaviour
         tabelObj.transform.SetParent(canvas3.transform, false);
         tabelObj.AddComponent<RectTransform>();
         SetFullRect(tabelObj.GetComponent<RectTransform>());
-        //---------------------------------------------------
 
         tableContainer = new GameObject("TableContainer");
         tableContainer.AddComponent<RectTransform>();
         tableContainer.transform.SetParent(canvas3.transform, false);
         SetFullRect(tableContainer.GetComponent<RectTransform>());
-       // ----------------------------------------------------------
-      
+
         GameObject CreateGridRow(string name, Transform parent, int padding, bool isTop)
         {
             GameObject rowObj = new(name);
             rowObj.AddComponent<RectTransform>();
-            rowObj.transform.SetParent(parent,false);
+            rowObj.transform.SetParent(parent, false);
             SetFullRect(rowObj.GetComponent<RectTransform>());
 
             GridLayoutGroup grid = rowObj.AddComponent<GridLayoutGroup>();
@@ -242,13 +248,16 @@ public class MatchingTaskController : MonoBehaviour
             else grid.padding.bottom = padding;
 
             return rowObj;
-
         }
 
-        letterRow = CreateGridRow("LetterRow",tableContainer.transform, 200, false);
+        letterRow = CreateGridRow("LetterRow", tableContainer.transform, 200, false);
         ringRow = CreateGridRow("RingRow", tableContainer.transform, 200, true);
     }
 
+    // Rotates the stimulus image to the orientation corresponding to
+    // index. Only Landolt C and Tumbling E use rotation to encode the
+    // displayed orientation; the other sets rely on distinct sprites
+    // instead and are left unrotated.
     private void ApplyRotation(UnityEngine.UI.Image img, int index, StimuliSet stimuliSet)
     {
         switch (stimuliSet)
@@ -259,21 +268,25 @@ public class MatchingTaskController : MonoBehaviour
                 break;
         }
     }
+
+    // Renders the current trial: applies the chosen sprite, color, and
+    // rotation to screen 1 and screen 2, then rebuilds the mapping table
+    // on screen 3 in the shuffled order so the same mapping cannot be
+    // memorized across trials.
     private void DisplayTrial()
     {
         void SetColor(UnityEngine.UI.Image img)
         {
-                int i = Random.Range(0, color.Length);
-                img.color = color[i];
+            int i = Random.Range(0, colors.Length);
+            img.color = colors[i];
         }
 
         foreach (Transform child in letterRow.transform)
-           Destroy(child.gameObject);
-        
+            Destroy(child.gameObject);
+
         foreach (Transform child in ringRow.transform)
             Destroy(child.gameObject);
 
-        //-----------------------------------------------------------------
         void CreateCell(string name, Transform parent, Sprite[] sprites, StimuliSet stimuliSet, int index)
         {
             GameObject cell = new(name);
@@ -282,38 +295,38 @@ public class MatchingTaskController : MonoBehaviour
             img.sprite = sprites[index];
 
             SetColor(img);
-            ApplyRotation(img, index, stimuliSet);                                  
+            ApplyRotation(img, index, stimuliSet);
         }
 
-        //-----screenOne
+        // Screen 1
         screenOneImage.sprite = screenOneSprites[screenOneIndex];
-        if (matchByColor) screenOneImage.color = color[screenOneColorIndex];
+        if (matchByColor) screenOneImage.color = colors[screenOneColorIndex];
         else SetColor(screenOneImage);
         ApplyRotation(screenOneImage, screenOneIndex, screenOneStimuliSet);
-        
-        //-----screenTwo
+
+        // Screen 2
         screenTwoImage.sprite = screenTwoSprites[screenTwoIndex];
-        if (matchByColor) screenTwoImage.color = color[screenTwoColorIndex];
+        if (matchByColor) screenTwoImage.color = colors[screenTwoColorIndex];
         else SetColor(screenTwoImage);
         ApplyRotation(screenTwoImage, screenTwoIndex, screenTwoStimuliSet);
 
-        // filling the Table
-        foreach ( int i in shuffled)
+        // Screen 3 (mapping table)
+        foreach (int i in shuffled)
             CreateCell("LetterCell", letterRow.transform, screenOneSprites, screenOneStimuliSet, i);
 
         foreach (int i in shuffled)
             CreateCell("RingCell", ringRow.transform, screenTwoSprites, screenTwoStimuliSet, i);
-
     }
 
+    // Returns the eight table indices in a randomized order, using a
+    // Fisher-Yates shuffle so the row order in the mapping table differs
+    // from trial to trial.
     private int[] ShuffleIndices()
     {
         int[] indices = { 0, 1, 2, 3, 4, 5, 6, 7 };
-        for(int i = indices.Length - 1; i > 0; i--)
+        for (int i = indices.Length - 1; i > 0; i--)
         {
             int j = Random.Range(0, i + 1);
-            // swap
-
             int temp = indices[i];
             indices[i] = indices[j];
             indices[j] = temp;
@@ -321,6 +334,8 @@ public class MatchingTaskController : MonoBehaviour
         return indices;
     }
 
+    // Appends one line of trial data to the CSV file, matching the header
+    // written in Start.
     private void SaveToCSV(bool correct, bool playerAnswer, float responseTime)
     {
         string line = $"{trialNumber},{responseTime},{isMatch},{playerAnswer},{correct},{matchByColor}\n";
@@ -330,7 +345,6 @@ public class MatchingTaskController : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-
         string timestamp = System.DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
         csvPath = Application.persistentDataPath + "/matching_task_" + timestamp + ".csv";
         File.WriteAllText(csvPath, "TrialNumber,ResponseTime,,IsMatch,PlayerAnswer,Correct,MatchByColor\n");
@@ -354,8 +368,8 @@ public class MatchingTaskController : MonoBehaviour
     {
         screens[0].transform.position = Screen1;
         float scale1 = Screen1.z * globalScale;
-        screens[0].transform.localScale = new Vector3 (scale1, scale1, 1f);
-        
+        screens[0].transform.localScale = new Vector3(scale1, scale1, 1f);
+
         screens[1].transform.position = Screen2;
         float scale2 = Screen2.z * globalScale;
         screens[1].transform.localScale = new Vector3(scale2, scale2, 1f);
@@ -369,6 +383,5 @@ public class MatchingTaskController : MonoBehaviour
         screens[2].transform.rotation = Quaternion.Euler(rotation3);
 
         HandleInput();
-
     }
 }
