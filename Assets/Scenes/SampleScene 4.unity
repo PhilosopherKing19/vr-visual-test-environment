@@ -393,6 +393,7 @@ GameObject:
   m_Component:
   - component: {fileID: 597813963}
   - component: {fileID: 597813964}
+  - component: {fileID: 597813965}
   m_Layer: 0
   m_Name: ComparativeSearchTask
   m_TagString: Untagged
@@ -427,10 +428,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 262c66a00ab6cf341b61e0d6f1be87c0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ComparativeSearchTask
+--- !u!114 &597813965
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 597813960}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9a847d38c8b0d754d96c3645dc3f6490, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ComparativeSearchTask
   screenPositions:
-  - {x: 0, y: 0, z: 1}
-  - {x: 0, y: 0, z: 1}
-  - {x: 0, y: 0, z: 1}
+  - {x: 0, y: 0, z: 0}
+  - {x: 0, y: 0, z: 0}
+  - {x: 0, y: 0, z: 0}
   screenRotations:
   - {x: 0, y: 0, z: 0}
   - {x: 0, y: 0, z: 0}
@@ -465,6 +478,7 @@ GameObject:
   m_Component:
   - component: {fileID: 653137114}
   - component: {fileID: 653137115}
+  - component: {fileID: 653137116}
   m_Layer: 0
   m_Name: VisualAcuityTask
   m_TagString: Untagged
@@ -499,15 +513,27 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 97be615615a824143a09ccd1bb541a95, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::VisualAcuityTest
+--- !u!114 &653137116
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 653137112}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9cc3c061594002b48bae774c5ebb49b2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VisualAcuityTest
   screenPrefab: {fileID: 3498186372790059900, guid: 0ce625726bf7b9f4d9f96421dd15251c, type: 3}
   position: {x: 0, y: 0, z: 0}
   rotation: {x: 0, y: 0, z: 0}
-  scale: 1
+  scale: 0
   currentStimuliSet: 0
   finishingSize: 15
   totalTrials: 7
   initialSize: 200
-  endOnFinishingSize: 0
+  endOnFinishingSize: 1
   correctThreshold: 3
   incorrectThreshold: 1
   landoltC: {fileID: 21300000, guid: fbb6c1b7f5d60164ca46cbf267373598, type: 3}
@@ -573,13 +599,14 @@ GameObject:
   m_Component:
   - component: {fileID: 895096513}
   - component: {fileID: 895096514}
+  - component: {fileID: 895096515}
   m_Layer: 0
   m_Name: NasaTLXTask
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &895096513
 Transform:
   m_ObjectHideFlags: 0
@@ -607,23 +634,35 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bac3b843711689b439b20f4cf90f6542, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NASATLXTask
+--- !u!114 &895096515
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 895096511}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0d0aeacc5d3f955488b52e4c92d90b88, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NASATLXTask
   questions:
-  - 1
-  - 2
-  - 3
-  - 4
-  - 5
-  - 6
+  - 11
+  - 22
+  - 33
+  - 44
+  - 55
+  - 66
   headers:
-  - 1
-  - 2
-  - 3
-  - 4
-  - 5
-  - 2
+  - 10
+  - 20
+  - 30
+  - 40
+  - 50
+  - 60
   screenPrefab: {fileID: 3498186372790059900, guid: 0ce625726bf7b9f4d9f96421dd15251c, type: 3}
-  position: {x: 0, y: 0, z: 1}
-  rotation: {x: 0, y: 180, z: 0}
+  position: {x: 0, y: 0, z: 0}
+  rotation: {x: 0, y: 0, z: 0}
   scale: 1
 --- !u!1 &1324642193
 GameObject:
@@ -714,6 +753,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1913722391}
   - component: {fileID: 1913722392}
+  - component: {fileID: 1913722393}
   m_Layer: 0
   m_Name: MatchingTask_Main
   m_TagString: Untagged
@@ -748,13 +788,25 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b2899ba44fdfa1e4a8956fae05cbf8a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MatchingTaskController
+--- !u!114 &1913722393
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1913722388}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 832c2b90ad24f2c4db0b3121a18a4c6d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MatchingTaskController
   Screen1: {x: 0, y: 0, z: 1}
   Screen2: {x: 0, y: 0, z: 1}
   Screen3: {x: 0, y: 0, z: 1}
   rotation1: {x: 0, y: 0, z: 0}
   rotation2: {x: 0, y: 0, z: 0}
   rotation3: {x: 0, y: 0, z: 0}
-  globalScale: 1
+  globalScale: 0.33
   screenPrefab: {fileID: 3498186372790059900, guid: 0ce625726bf7b9f4d9f96421dd15251c, type: 3}
   screenOneStimuliSet: 1
   screenTwoStimuliSet: 0

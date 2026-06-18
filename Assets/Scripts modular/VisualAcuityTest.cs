@@ -2,7 +2,6 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
-using System.IO;
 using System.Collections.Generic;
 
 public class VisualAcuityTest : MonoBehaviour
@@ -37,7 +36,7 @@ public class VisualAcuityTest : MonoBehaviour
     [SerializeField] private Sprite[] sloanLetterSprites;
     [SerializeField] private Sprite[] geometricSprites;
 
-    private readonly float[] landoltCRotations = { 0f, 45f, 90f, 135f, 180f, 225f, 270f, 315f };
+    // The Landolt C orientation table is now shared via StimulusRotations.
     private readonly float[] tumblingERotations = { 0f, 90f, 180f, 270f };
     private Sprite[] currentSprites;
 
@@ -49,6 +48,7 @@ public class VisualAcuityTest : MonoBehaviour
     private int trialCount;
 
     // --- Scene references ----------------------------------------------
+    private ScreenManager1 screenManager;
     private GameObject screen;
     private Canvas screenCanvas;
     private UnityEngine.UI.Image stimulusImage;
@@ -62,7 +62,7 @@ public class VisualAcuityTest : MonoBehaviour
     private float responseTime;
 
     // --- CSV logging ----------------------------------------------
-    private string csvPath;
+    private TrialLogger logger;
     private int trialNumber;
 
     // --- Calibration logging (px-to-world-unit measurement) -------------
@@ -132,12 +132,11 @@ public class VisualAcuityTest : MonoBehaviour
         }
     }
 
-    // Instantiates the screen prefab and creates the stimulus image as a
-    // child of its canvas. The stimulus sprite and size are set later in
-    // DisplayStimulus for each trial.
+    // Creates the stimulus image as a child of the generated screen's canvas.
+    // The screen itself is instantiated by the ScreenManager in Start. The
+    // stimulus sprite and size are set later in DisplayStimulus for each trial.
     private void SetupScreen()
     {
-        screen = Object.Instantiate(screenPrefab);
         screenCanvas = screen.GetComponentInChildren<Canvas>();
 
         GameObject obj = new GameObject("Stimulus");
@@ -153,7 +152,7 @@ public class VisualAcuityTest : MonoBehaviour
     private void ApplyRotation(UnityEngine.UI.Image img, int shapeIndex)
     {
         if (currentStimuliSet == StimuliSet.LandoltC)
-            img.transform.rotation = Quaternion.Euler(0, 0, landoltCRotations[shapeIndex]);
+            img.transform.rotation = Quaternion.Euler(0, 0, StimulusRotations.LandoltC[shapeIndex]);
 
         else if (currentStimuliSet == StimuliSet.TumblingE)
             img.transform.rotation = Quaternion.Euler(0, 0, tumblingERotations[shapeIndex]);
@@ -213,28 +212,17 @@ public class VisualAcuityTest : MonoBehaviour
         if (endOnFinishingSize && currentSize <= finishingSize)
         {
             Debug.Log("Task finished - Min. size reached");
-            EndTask();
+            TaskRunner.Exit();
         }
         else if (!endOnFinishingSize && trialCount >= totalTrials)
         {
             Debug.Log("Task finished - Max. trials reached");
-            EndTask();
+            TaskRunner.Exit();
         }
         else
         {
             DisplayStimulus();
         }
-    }
-
-    // Stops play mode in the editor or quits the built application,
-    // depending on which environment the task is running in.
-    private void EndTask()
-    {
-#if UNITY_EDITOR
-        UnityEditor.EditorApplication.isPlaying = false;
-#else
-        Application.Quit();
-#endif
     }
 
     // Maps numpad and arrow key input to the four Tumbling E directions.
@@ -279,30 +267,21 @@ public class VisualAcuityTest : MonoBehaviour
         else if (Keyboard.current.numpad7Key.wasPressedThisFrame) EvaluateResponse(7);
     }
 
-    // Appends one line of trial data to the CSV file, matching the header
-    // written in SetupCSV.
+    // Appends one line of trial data through the shared TrialLogger, matching
+    // the column order passed to it in Start.
     private void SaveToCSV(int playerAnswer, bool correct)
     {
-        string line = string.Format(System.Globalization.CultureInfo.InvariantCulture,
-            "{0},{1},{2},{3},{4},{5},{6}\n",
-            trialNumber, currentStimuliSet, playerAnswer, correct, currentSize, correctStreak, responseTime);
-        File.AppendAllText(csvPath, line);
-    }
-
-    // Creates a new, timestamped CSV file for this session and writes the
-    // header row.
-    private void SetupCSV()
-    {
-        string timestamp = System.DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
-        csvPath = Application.persistentDataPath + "/visual_acuity_" + timestamp + ".csv";
-        File.WriteAllText(csvPath, "TrialNumber,StimuliSet,PlayerAnswer,Correct,CurrentSize,CorrectStreak,ResponseTime\n");
+        logger.WriteRow(trialNumber, currentStimuliSet, playerAnswer, correct, currentSize, correctStreak, responseTime);
     }
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        SetupCSV();
+        logger = new TrialLogger("visual_acuity",
+            new[] { "TrialNumber", "StimuliSet", "PlayerAnswer", "Correct", "CurrentSize", "CorrectStreak", "ResponseTime" });
         SetupStimuliSet();
+        screenManager = new ScreenManager1(screenPrefab, rotation);
+        screen = screenManager.GenerateScreens(new List<Vector3> { position })[0];
         SetupScreen();
         if (currentStimuliSet == StimuliSet.SloanLetters || currentStimuliSet == StimuliSet.GeoShapes)
             SetupAnswerButtons();
@@ -314,9 +293,7 @@ public class VisualAcuityTest : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        screen.transform.position = position;
-        screen.transform.rotation = Quaternion.Euler(rotation);
-        screen.transform.localScale = new Vector3(scale, scale, 1f);
+        screenManager.UpdateTransform(position, rotation, scale);
 
         // TEMP - for unit conversion (px to world units), logged once per
         // session; kept for reproducibility of the thesis's calibration

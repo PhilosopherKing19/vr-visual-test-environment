@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using System.IO;
 using System.Linq;
 
 
@@ -39,7 +38,7 @@ public class ComparativeSearchTask : MonoBehaviour
     private int trialNumber;
     private float trialStartTime;
     private float responseTime;
-    private string csvPath;
+    private TrialLogger logger;
 
     // --- Stimuli selection ----------------------------------------------
     private enum StimuliSet
@@ -50,7 +49,7 @@ public class ComparativeSearchTask : MonoBehaviour
         TumblingE
     }
     [SerializeField] private Sprite landoltC;
-    private readonly float[] landoltCRotations = { 0f, 45f, 90f, 135f, 180f, 225f, 270f, 315f };
+    // The Landolt C orientation table is now shared via StimulusRotations.
     [SerializeField] private Sprite tumblingE;
     private readonly float[] tumblingERotations = { 0f, 90f, 180f, 270f };
     [SerializeField] private Sprite[] sloanLetterSprites;
@@ -79,7 +78,7 @@ public class ComparativeSearchTask : MonoBehaviour
     private void ApplyRotation(UnityEngine.UI.Image img, int shapeIndex)
     {
         if (currentStimuliSet == StimuliSet.LandoltC)
-            img.transform.rotation = Quaternion.Euler(0, 0, landoltCRotations[shapeIndex]);
+            img.transform.rotation = Quaternion.Euler(0, 0, StimulusRotations.LandoltC[shapeIndex]);
 
         else if (currentStimuliSet == StimuliSet.TumblingE)
             img.transform.rotation = Quaternion.Euler(0, 0, tumblingERotations[shapeIndex]);
@@ -339,35 +338,8 @@ public class ComparativeSearchTask : MonoBehaviour
     // covering one button per screen plus the "no difference" button.
     private void HandleInput()
     {
-        if (Keyboard.current.digit0Key.wasPressedThisFrame || Keyboard.current.numpad0Key.wasPressedThisFrame)
-            EvaluateResponse(0);
-
-        if (Keyboard.current.digit1Key.wasPressedThisFrame || Keyboard.current.numpad1Key.wasPressedThisFrame)
-            EvaluateResponse(1);
-
-        if (Keyboard.current.digit2Key.wasPressedThisFrame || Keyboard.current.numpad2Key.wasPressedThisFrame)
-            EvaluateResponse(2);
-
-        if (Keyboard.current.digit3Key.wasPressedThisFrame || Keyboard.current.numpad3Key.wasPressedThisFrame)
-            EvaluateResponse(3);
-
-        if (Keyboard.current.digit4Key.wasPressedThisFrame || Keyboard.current.numpad4Key.wasPressedThisFrame)
-            EvaluateResponse(4);
-
-        if (Keyboard.current.digit5Key.wasPressedThisFrame || Keyboard.current.numpad5Key.wasPressedThisFrame)
-            EvaluateResponse(5);
-
-        if (Keyboard.current.digit6Key.wasPressedThisFrame || Keyboard.current.numpad6Key.wasPressedThisFrame)
-            EvaluateResponse(6);
-
-        if (Keyboard.current.digit7Key.wasPressedThisFrame || Keyboard.current.numpad7Key.wasPressedThisFrame)
-            EvaluateResponse(7);
-
-        if (Keyboard.current.digit8Key.wasPressedThisFrame || Keyboard.current.numpad8Key.wasPressedThisFrame)
-            EvaluateResponse(8);
-
-        if (Keyboard.current.digit9Key.wasPressedThisFrame || Keyboard.current.numpad9Key.wasPressedThisFrame)
-            EvaluateResponse(9);
+        if (DigitInput.TryGetDigit(out int digit))
+            EvaluateResponse(digit);
     }
 
     // Destroys all previously generated objects across all screens and
@@ -383,19 +355,17 @@ public class ComparativeSearchTask : MonoBehaviour
         canvases.Clear();
     }
 
-    // Appends one line of trial data to the CSV file, matching the header
-    // written in Start.
+    // Appends one line of trial data through the shared TrialLogger, matching
+    // the column order passed to it in Start.
     private void SaveToCSV(bool correct, int playerAnswer)
     {
-        string line = $"{trialNumber},{responseTime},{hasMismatch},{mismatchScreenIndex},{playerAnswer},{correct},{currentMismatchType}\n";
-        File.AppendAllText(csvPath, line);
+        logger.WriteRow(trialNumber, responseTime, hasMismatch, mismatchScreenIndex, playerAnswer, correct, currentMismatchType);
     }
 
     void Start()  // Start is called once before the first execution of Update after the MonoBehaviour is created
     {
-        string timestamp = System.DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
-        csvPath = Application.persistentDataPath + "/comparative_search_" + timestamp + ".csv";
-        File.WriteAllText(csvPath, "TrialNumber,ResponseTime,,HasMismatch,MismatchScreenIndex,PlayerAnswer,Correct,MismatchType\n");
+        logger = new TrialLogger("comparative_search",
+            new[] { "TrialNumber", "ResponseTime", "HasMismatch", "MismatchScreenIndex", "PlayerAnswer", "Correct", "MismatchType" });
 
         SetupStimuliSet();
 
@@ -411,14 +381,7 @@ public class ComparativeSearchTask : MonoBehaviour
     // each frame from the configured Inspector values.
     void UpdatePositions()
     {
-        for (int i = 0; i < screens.Count; i++)
-        {
-            screens[i].transform.position = screenPositions[i];
-            float scale = screens[i].transform.position.z * globalScale;
-            screens[i].transform.localScale = new Vector3(scale, scale, 1f);
-
-            screens[i].transform.rotation = Quaternion.Euler(screenRotations[i]);
-        }
+        screenManager1.UpdateTransforms(screenPositions, screenRotations, globalScale);
     }
 
     // Update is called once per frame

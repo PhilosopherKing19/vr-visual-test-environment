@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using UnityEngine.UI;
 using UnityEngine.InputSystem;
 using System.Linq;
-using System.IO;
 
 
 public class MatchingTaskController : MonoBehaviour
@@ -50,7 +49,8 @@ public class MatchingTaskController : MonoBehaviour
     [SerializeField] private Sprite[] sloanLetterSprites;
     [SerializeField] private Sprite[] shapeSprites;
 
-    private readonly float[] landoltCRings = { 0, 45, 90, 135, 180, 225, 270, 315 };
+    // The Landolt C orientation table is now shared via StimulusRotations and
+    // is used here for both the Landolt C and Tumbling E sets, as before.
 
     [SerializeField] private bool randomGrayscale;
     [SerializeField] private Color[] colors;
@@ -74,7 +74,7 @@ public class MatchingTaskController : MonoBehaviour
     private GameObject ringRow;
 
     // --- CSV logging ----------------------------------------------
-    private string csvPath;
+    private TrialLogger logger;
     private int trialNumber;
     private float trialStartTime;
 
@@ -264,7 +264,7 @@ public class MatchingTaskController : MonoBehaviour
         {
             case StimuliSet.LandoltC:
             case StimuliSet.TumblingE:
-                img.transform.rotation = Quaternion.Euler(0, 0, landoltCRings[index]);
+                img.transform.rotation = Quaternion.Euler(0, 0, StimulusRotations.LandoltC[index]);
                 break;
         }
     }
@@ -334,20 +334,18 @@ public class MatchingTaskController : MonoBehaviour
         return indices;
     }
 
-    // Appends one line of trial data to the CSV file, matching the header
-    // written in Start.
+    // Appends one line of trial data through the shared TrialLogger, matching
+    // the column order passed to it in Start.
     private void SaveToCSV(bool correct, bool playerAnswer, float responseTime)
     {
-        string line = $"{trialNumber},{responseTime},{isMatch},{playerAnswer},{correct},{matchByColor}\n";
-        File.AppendAllText(csvPath, line);
+        logger.WriteRow(trialNumber, responseTime, isMatch, playerAnswer, correct, matchByColor);
     }
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        string timestamp = System.DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
-        csvPath = Application.persistentDataPath + "/matching_task_" + timestamp + ".csv";
-        File.WriteAllText(csvPath, "TrialNumber,ResponseTime,,IsMatch,PlayerAnswer,Correct,MatchByColor\n");
+        logger = new TrialLogger("matching_task",
+            new[] { "TrialNumber", "ResponseTime", "IsMatch", "PlayerAnswer", "Correct", "MatchByColor" });
 
         trialStartTime = Time.time;
         positions.Add(Screen1);
@@ -366,21 +364,10 @@ public class MatchingTaskController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        screens[0].transform.position = Screen1;
-        float scale1 = Screen1.z * globalScale;
-        screens[0].transform.localScale = new Vector3(scale1, scale1, 1f);
-
-        screens[1].transform.position = Screen2;
-        float scale2 = Screen2.z * globalScale;
-        screens[1].transform.localScale = new Vector3(scale2, scale2, 1f);
-
-        screens[2].transform.position = Screen3;
-        float scale3 = Screen3.z * globalScale;
-        screens[2].transform.localScale = new Vector3(scale3, scale3, 1f);
-
-        screens[0].transform.rotation = Quaternion.Euler(rotation1);
-        screens[1].transform.rotation = Quaternion.Euler(rotation2);
-        screens[2].transform.rotation = Quaternion.Euler(rotation3);
+        screenManager.UpdateTransforms(
+            new List<Vector3> { Screen1, Screen2, Screen3 },
+            new List<Vector3> { rotation1, rotation2, rotation3 },
+            globalScale);
 
         HandleInput();
     }
